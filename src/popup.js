@@ -4,7 +4,7 @@ import { showUploadSection, showManageSection, showChecklistView, showCarouselVi
 import { loadChecklists, renderChecklistList, editFilename, deleteChecklist, viewChecklist } from './checklistManager.js';
 import { showPreviousItem, showNextItem } from './carouselManager.js';
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
   const uploadBtn = document.getElementById('upload-btn');
   const manageBtn = document.getElementById('manage-btn');
   const fileInput = document.getElementById('file-input');
