@@ -122,4 +122,3 @@ CheckMate is open-source software licensed under the [MIT license](LICENSE).
 <p align="center">
   CheckMate: Your guide to ensuring consistent and accurate workflows in any domain.
 </p>
-```
