@@ -32,8 +32,63 @@
 #
 #===============================================================================
 
-# Set shell options for strict error checking and better pipeline behavior
-set -euo pipefail
+set -x
+
+#-------------------------------------------------------------------------------
+# Exclusion Lists
+#-------------------------------------------------------------------------------
+
+readonly EXCLUDE_FILES=(
+    ".DS_Store"
+    "build_features.log"
+    "cleaning.log"
+    "combine.sh"
+    "combined.txt"
+    "combined.yaml"
+    "dvc.lock"
+    "evaluation.log"
+    "evaluate.log"
+    "ingestion.log"
+    "LICENSE"
+    "Makefile"
+    "preprocessing.log"
+    "README.md"
+    "splitting.log"
+    "test.sh"
+    "Thumbs.db"
+    "train.log"
+    "update_repository.sh"
+    "visualize.log"
+)
+
+readonly EXCLUDE_FOLDERS=(
+    "__pycache__"
+    ".devcontainer"
+    ".dvc"
+    ".git"
+    ".gitea"
+    ".github"
+    ".temp"
+    ".venv"
+    ".vscode"
+    "data"
+    "docs"
+    "huggingface"
+    "node_modules"
+    "notebooks"
+    "scripts"
+    "terraform"
+    "venv"
+)
+
+readonly EXCLUDE_PATTERNS=(
+    "*.log"
+    "*.pyc"
+    "*.mp3"
+    "*.mp4"
+    "*.pdf"
+    "*.pkl"
+)
 
 #-------------------------------------------------------------------------------
 # Function: get_project_root
@@ -91,48 +146,6 @@ readonly DEBUG_DIR="$PROJECT_ROOT/debug"
 readonly OUTPUT_FILE="$DEBUG_DIR/combined.txt"
 readonly TREE_FILE="$DEBUG_DIR/tree.txt"
 readonly DEBUG_FILE="$DEBUG_DIR/debug.log"
-
-#-------------------------------------------------------------------------------
-# Exclusion Lists
-#-------------------------------------------------------------------------------
-
-# Files to exclude from processing
-readonly EXCLUDE_FILES=(
-    ".DS_Store"
-    "combine.sh"
-    "combined.txt"
-    "debug.log"
-    "LICENSE"
-    "Thumbs.db"
-    "tree.txt"
-    "update.sh"
-)
-
-# Folders to exclude from processing
-readonly EXCLUDE_FOLDERS=(
-    "__pycache__"
-    ".devcontainer"
-    ".dvc"
-    ".git"
-    ".gitea"
-    ".github"
-    ".temp"
-    ".venv"
-    ".vscode"
-    "data"
-    "debug"
-    "node_modules"
-    "notebooks"
-    "temp"
-    "terraform"
-    "venv"
-)
-
-# File patterns to exclude from processing
-readonly EXCLUDE_PATTERNS=(
-    "*.log"
-    "*.pyc"
-)
 
 #-------------------------------------------------------------------------------
 # File Size Exclusion
@@ -288,107 +301,143 @@ generate_separator_line() {
 }
 
 #-------------------------------------------------------------------------------
-# Main Script Logic
+# Function: setup_environment
+#   Sets up the environment for the script execution.
 #-------------------------------------------------------------------------------
+setup_environment() {
+    # Create debug directory if it doesn't exist
+    mkdir -p "$DEBUG_DIR"
+    debug_log "Created debug directory: $DEBUG_DIR"
 
-# Create debug directory if it doesn't exist
-mkdir -p "$DEBUG_DIR"
-debug_log "Created debug directory: $DEBUG_DIR"
+    # Change to the project root directory
+    cd "$PROJECT_ROOT" || exit 1 # Exit with error if cd fails
+    debug_log "Changed to directory: $PROJECT_ROOT"
 
-# Change to the project root directory
-cd "$PROJECT_ROOT" || exit 1 # Exit with error if cd fails
-debug_log "Changed to directory: $PROJECT_ROOT"
+    # Remove any existing output files
+    rm -f "$OUTPUT_FILE" "$TREE_FILE" "$DEBUG_FILE"
+}
 
-# Remove any existing output files
-rm -f "$OUTPUT_FILE" "$TREE_FILE" "$DEBUG_FILE"
+#-------------------------------------------------------------------------------
+# Function: combine_files
+#   Combines the contents of all files within the project directory into a
+#   single output file, excluding specified files and directories.
+#-------------------------------------------------------------------------------
+combine_files() {
+    local first_file=true
 
-# Build find expressions for excluded directories
-declare -a FIND_PRUNE_DIRS
-for dir in "${EXCLUDE_FOLDERS[@]}"; do
-    FIND_PRUNE_DIRS+=("-path" "./$dir" "-o")
-done
+    # Build find expressions for excluded directories
+    local -a FIND_PRUNE_DIRS
+    for dir in "${EXCLUDE_FOLDERS[@]}"; do
+        FIND_PRUNE_DIRS+=("-path" "./$dir" "-o")
+    done
 
-# Remove the last "-o" if present
-[[ ${#FIND_PRUNE_DIRS[@]} -gt 0 ]] && unset 'FIND_PRUNE_DIRS[${#FIND_PRUNE_DIRS[@]}-1]'
+    # Remove the last "-o" if present
+    [[ ${#FIND_PRUNE_DIRS[@]} -gt 0 ]] && unset 'FIND_PRUNE_DIRS[${#FIND_PRUNE_DIRS[@]}-1]'
 
-# Build find expressions for excluded files
-declare -a FIND_PRUNE_FILES
-for file in "${EXCLUDE_FILES[@]}"; do
-    FIND_PRUNE_FILES+=("-name" "$file" "-o")
-done
+    # Build find expressions for excluded files
+    local -a FIND_PRUNE_FILES
+    for file in "${EXCLUDE_FILES[@]}"; do
+        FIND_PRUNE_FILES+=("-name" "$file" "-o")
+    done
 
-# Remove the last "-o" if present
-[[ ${#FIND_PRUNE_FILES[@]} -gt 0 ]] && unset 'FIND_PRUNE_FILES[${#FIND_PRUNE_FILES[@]}-1]'
+    # Remove the last "-o" if present
+    [[ ${#FIND_PRUNE_FILES[@]} -gt 0 ]] && unset 'FIND_PRUNE_FILES[${#FIND_PRUNE_FILES[@]}-1]'
 
-# Build the find command and process files
-first_file=true
+    # Build the find command and process files
+    find . \( \
+        "${FIND_PRUNE_DIRS[@]}" -false \) -prune -o \
+        \( "${FIND_PRUNE_FILES[@]}" -false \) -prune -o \
+        \( -type f \
+        $(printf " ! -name '%s'" "${EXCLUDE_PATTERNS[@]}") \
+        -size -"$MAX_FILE_SIZE_KB"k \
+        \) -print0 |
+    while IFS= read -r -d '' file; do
+        comment_start=$(get_comment_syntax "$file")
+        comment_end=$(get_comment_close "$file")
 
-find . \( \
-    "${FIND_PRUNE_DIRS[@]}" -false \) -prune -o \
-    \( "${FIND_PRUNE_FILES[@]}" -false \) -prune -o \
-    \( -type f \
-    $(printf " ! -name '%s'" "${EXCLUDE_PATTERNS[@]}") \
-    -size -"$MAX_FILE_SIZE_KB"k \
-    \) -print0 |
-while IFS= read -r -d '' file; do
-    comment_start=$(get_comment_syntax "$file")
-    comment_end=$(get_comment_close "$file")
+        # Generate separator line even for the first file:
+        separator_line=$(generate_separator_line "$comment_start" "$comment_end")
 
-    # Generate separator line even for the first file:
-    separator_line=$(generate_separator_line "$comment_start" "$comment_end")
+        if ! "$first_file"; then
+            # Add extra newline before separator for subsequent files
+            echo -e "\n\n$separator_line" >> "$OUTPUT_FILE"
+        else
+            # Just the separator for the first file
+            echo -e "$separator_line" >> "$OUTPUT_FILE"
+            first_file=false
+        fi
 
-    if ! "$first_file"; then
-        # Add extra newline before separator for subsequent files
-        echo -e "\n\n$separator_line" >> "$OUTPUT_FILE"
-    else
-        # Just the separator for the first file
-        echo -e "$separator_line" >> "$OUTPUT_FILE"
-        first_file=false
-    fi
+        {
+            printf '%s Source: %s %s\n\n' "$comment_start" "$file" "$comment_end"
+            cat "$file"
+        } >> "$OUTPUT_FILE"
+        debug_log "Added to combined file: $file"
+    done
 
-    {
-        printf '%s Source: %s %s\n\n' "$comment_start" "$file" "$comment_end"
-        cat "$file"
-    } >> "$OUTPUT_FILE"
-    debug_log "Added to combined file: $file"
-done
+    echo "File concatenation complete. Output saved to $OUTPUT_FILE"
+}
 
-echo "File concatenation complete. Output saved to $OUTPUT_FILE"
+#-------------------------------------------------------------------------------
+# Function: generate_tree_structure
+#   Generates a tree structure of the project directory, excluding specified
+#   files and directories.
+#-------------------------------------------------------------------------------
+generate_tree_structure() {
+    echo "Generating tree structure..."
 
-# Generate tree structure using the tree command
-echo "Generating tree structure..."
+    # Build the exclude pattern for the tree command
+    local TREE_EXCLUDE_PATTERN=$(printf "|%s" "${EXCLUDE_FILES[@]}" "${EXCLUDE_FOLDERS[@]}")
+    TREE_EXCLUDE_PATTERN=${TREE_EXCLUDE_PATTERN:1} # Remove leading '|'
 
-# Build the exclude pattern for the tree command
-TREE_EXCLUDE_PATTERN=$(printf "|%s" "${EXCLUDE_FILES[@]}" "${EXCLUDE_FOLDERS[@]}")
-TREE_EXCLUDE_PATTERN=${TREE_EXCLUDE_PATTERN:1} # Remove leading '|'
+    # Add EXCLUDE_PATTERNS to the tree exclude pattern
+    for pattern in "${EXCLUDE_PATTERNS[@]}"; do
+        TREE_EXCLUDE_PATTERN="$TREE_EXCLUDE_PATTERN|$pattern"
+    done
 
-# Add EXCLUDE_PATTERNS to the tree exclude pattern
-for pattern in "${EXCLUDE_PATTERNS[@]}"; do
-    TREE_EXCLUDE_PATTERN="$TREE_EXCLUDE_PATTERN|$pattern"
-done
+    # Generate the tree structure and redirect stderr to debug file
+    tree -a -I "$TREE_EXCLUDE_PATTERN" > "$TREE_FILE" 2>>"$DEBUG_FILE"
 
-# Generate the tree structure and redirect stderr to debug file
-tree -a -I "$TREE_EXCLUDE_PATTERN" > "$TREE_FILE" 2>>"$DEBUG_FILE"
+    # Replace the '.' at the top of the tree output with the full path
+    sed -i "1s|^\.$|$PWD|" "$TREE_FILE"
 
-# Replace the '.' at the top of the tree output with the full path
-sed -i "1s|^\.$|$PWD|" "$TREE_FILE"
+    debug_log "Tree command used: tree -a -I \"$TREE_EXCLUDE_PATTERN\""
 
-debug_log "Tree command used: tree -a -I \"$TREE_EXCLUDE_PATTERN\""
+    echo "Tree structure saved to $TREE_FILE"
 
-echo "Tree structure saved to $TREE_FILE"
+    # Cat the tree.txt to the top of combined.txt
+    echo "" > temp
+    cat "$TREE_FILE" temp "$OUTPUT_FILE" > combined_temp && mv combined_temp "$OUTPUT_FILE"
+    rm temp
+    debug_log "Added tree structure to the top of the combined file: $TREE_FILE"
+}
 
-# Cat the tree.txt to the top of combined.txt
-echo "" > temp
-cat "$TREE_FILE" temp "$OUTPUT_FILE" > combined_temp && mv combined_temp "$OUTPUT_FILE"
-rm temp
-debug_log "Added tree structure to the top of the combined file with a newline: $TREE_FILE"
+#-------------------------------------------------------------------------------
+# Function: display_results
+#   Displays the results of the script execution.
+#-------------------------------------------------------------------------------
+display_results() {
+    # Display debug information
+    cat "$DEBUG_FILE"
 
-# Display the contents of the tree file
-echo -e "\nTree structure (from $TREE_FILE):"
-cat "$TREE_FILE"
+    echo ""
+    echo ""
+    echo ""
 
-# Display debug information
-echo -e "\nDebug information (from $DEBUG_FILE):"
-cat "$DEBUG_FILE"
+    # Display the contents of the tree file
+    cat "$TREE_FILE"
 
-echo -e "\nAll output files are located in the debug folder: $DEBUG_DIR"
+    echo -e "\nAll output files are located in the debug folder: $DEBUG_DIR"
+}
+
+#-------------------------------------------------------------------------------
+# Main function
+#-------------------------------------------------------------------------------
+main() {
+    setup_environment
+    combine_files
+    generate_tree_structure
+    display_results
+}
+
+# Execute the main function
+main

@@ -4,25 +4,25 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        primary: '#4CAF50',
-      },
-    },
+        primary: '#4CAF50'
+      }
+    }
   },
-  plugins: [require("daisyui")],
+  plugins: [require('daisyui')],
   daisyui: {
     themes: [
       {
         light: {
-          ...require("daisyui/src/colors/themes")["[data-theme=light]"],
-          primary: "#4CAF50",
-        },
+          ...require('daisyui/src/colors/themes')['[data-theme=light]'],
+          primary: '#4CAF50'
+        }
       },
       {
         dark: {
-          ...require("daisyui/src/colors/themes")["[data-theme=dark]"],
-          primary: "#66BB6A",
-        },
-      },
-    ],
-  },
-};
+          ...require('daisyui/src/colors/themes')['[data-theme=dark]'],
+          primary: '#66BB6A'
+        }
+      }
+    ]
+  }
+}
