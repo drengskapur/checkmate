@@ -28,7 +28,7 @@
 #
 # VERSION: 5.4
 #
-# AUTHOR: Bard
+# AUTHOR: Drenskapur
 #
 #===============================================================================
 
@@ -77,11 +77,12 @@ readonly EXCLUDE_FOLDERS=(
     ".venv"
     ".vscode"
     "data"
+    "debug"
     "node_modules"
     "notebooks"
+    "temp"
     "terraform"
     "venv"
-    "debug"
 )
 
 # File patterns to exclude from processing
@@ -321,11 +322,15 @@ while IFS= read -r -d '' file; do
     comment_start=$(get_comment_syntax "$file")
     comment_end=$(get_comment_close "$file")
 
+    # **Generate separator line even for the first file:**
+    separator_line=$(generate_separator_line "$comment_start" "$comment_end")
+
     if ! "$first_file"; then
-        # Generate and write separator line
-        separator_line=$(generate_separator_line "$comment_start" "$comment_end")
+        # Add extra newline before separator for subsequent files
         echo -e "\n\n$separator_line" >> "$OUTPUT_FILE"
     else
+        # Just the separator for the first file
+        echo -e "$separator_line" >> "$OUTPUT_FILE"
         first_file=false
     fi
 
@@ -359,6 +364,12 @@ sed -i "1s|^\.$|$PWD|" "$TREE_FILE"
 debug_log "Tree command used: tree -a -I \"$TREE_EXCLUDE_PATTERN\""
 
 echo "Tree structure saved to $TREE_FILE"
+
+# Cat the tree.txt to the top of combined.txt
+echo "" > temp
+cat "$TREE_FILE" temp "$OUTPUT_FILE" > combined_temp && mv combined_temp "$OUTPUT_FILE"
+rm temp
+debug_log "Added tree structure to the top of the combined file with a newline: $TREE_FILE"
 
 # Display the first few lines of the output file
 echo -e "\nFirst few lines of $OUTPUT_FILE:"
