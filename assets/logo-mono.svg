@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 100">
-  <rect x="10" y="10" width="80" height="80" rx="20" ry="20" fill="white" />
-  <path d="M30 50 L45 65 L70 35" stroke="#4CAF50" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round" />
-  <path d="M20 80 L80 80" stroke="#4CAF50" stroke-width="4" fill="none" stroke-linecap="round" />
-  <text x="110" y="65" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="white">CheckMate</text>
-</svg>
