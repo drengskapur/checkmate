@@ -26,7 +26,7 @@
 #   - This script should be run from the 'scripts' directory.
 #   - Customize the exclusion lists and configuration variables as needed.
 #
-# VERSION: 5.4
+# VERSION: 5.5
 #
 # AUTHOR: Drenskapur
 #
@@ -36,15 +36,58 @@
 set -euo pipefail
 
 #-------------------------------------------------------------------------------
+# Function: get_project_root
+#   Determines the project root directory.
+#
+# Returns:
+#   The path to the project root directory.
+#-------------------------------------------------------------------------------
+get_project_root() {
+    local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    local current_dir="$script_dir"
+    local max_depth=10
+
+    # Try to find Git root
+    if git -C "$script_dir" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+        git -C "$script_dir" rev-parse --show-toplevel
+        return
+    fi
+
+    # If not in a Git repo, traverse up the directory tree
+    while [[ $max_depth -gt 0 ]]; do
+        # Check for common project root indicators
+        if [[ -f "$current_dir/package.json" ]] ||
+           [[ -f "$current_dir/setup.py" ]] ||
+           [[ -f "$current_dir/Makefile" ]] ||
+           [[ -f "$current_dir/README.md" ]]; then
+            echo "$current_dir"
+            return
+        fi
+
+        # Move up one directory
+        current_dir="$(dirname "$current_dir")"
+        ((max_depth--))
+
+        # Stop if we've reached the filesystem root
+        [[ "$current_dir" == "/" ]] && break
+    done
+
+    # If no project root found, use the script's parent directory
+    echo "$(dirname "$script_dir")"
+}
+
+#-------------------------------------------------------------------------------
 # Configuration Variables
 #-------------------------------------------------------------------------------
 
-# Determine script and parent directory paths
+# Determine script directory path
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-readonly PARENT_DIR="$(dirname "$SCRIPT_DIR")"
+
+# Determine project root
+readonly PROJECT_ROOT="$(get_project_root)"
 
 # Set paths for output and debug files
-readonly DEBUG_DIR="$PARENT_DIR/debug"
+readonly DEBUG_DIR="$PROJECT_ROOT/debug"
 readonly OUTPUT_FILE="$DEBUG_DIR/combined.txt"
 readonly TREE_FILE="$DEBUG_DIR/tree.txt"
 readonly DEBUG_FILE="$DEBUG_DIR/debug.log"
@@ -125,92 +168,60 @@ get_comment_syntax() {
     local ext="${file##*.}"
     local shebang_line
 
-    # Read the first line to check for shebang
-    if [[ -f "$file" ]]; then
-        read -r shebang_line < "$file"
-    else
-        shebang_line=""
-    fi
+    [[ -f "$file" ]] && read -r shebang_line < "$file" || shebang_line=""
 
     case "$ext" in
-        # Shell scripts
-        sh|bash|zsh|fish|ksh|csh|tcsh|ash|dash|xonsh) echo "#"; ;;
-
-        # Scripting languages
-        py|pyw|pyc|pyo|pyd|pyi|pyx|pxd|pxi) echo "#"; ;;
-        rb|rbw|rake|gemspec) echo "#"; ;;
-        pl|pm|t|pod) echo "#"; ;;
-        php|php3|php4|php5|php7|phps|phtml|phar)
-            if [[ "$shebang_line" == *php* ]]; then
-                echo "#"; # Shell-style comment if PHP shebang
-            else
-                echo "//"; # C++ style comment
-            fi
+        # Shell and scripting languages (# comment)
+        ash|bash|cmake|CMakeLists.txt|coffee|csh|dash|Dockerfile|dockerfile|\
+        fish|gnumakefile|GNUmakefile|hcl|ksh|makefile|Makefile|pl|pm|pod|\
+        ps1|psd1|psm1|py|pyd|pyi|pyo|pyc|pxd|pxi|pyw|pyx|r|R|rake|rb|rbw|\
+        Rmd|sh|t|tcl|tf|tfstate|tfvars|tk|toml|xonsh|yaml|yml|zsh)
+            echo "#"
             ;;
-        lua) echo "--"; ;;
-        tcl|tk|itcl|itk) echo "#"; ;;
 
-        # Compiled languages
-        c|h|i) echo "//"; ;;
-        cpp|cc|cxx|c++|hpp|hxx|h++|hh|ii) echo "//"; ;;
-        m|mm) echo "//"; ;;
-        cs) echo "//"; ;;
-        java|scala|kt|kts) echo "//"; ;;
-        go) echo "//"; ;;
-        rs|rlib) echo "//"; ;;
-        swift) echo "//"; ;;
-        d|di) echo "//"; ;;
+        # C-style languages (// comment)
+        c|c++|cc|cpp|cs|cxx|d|di|go|h|h++|hh|hpp|hxx|i|ii|java|js|json|\
+        json5|jsonc|jsx|kt|kts|m|mjs|mm|rs|rlib|scala|swift|ts|tsx)
+            echo "//"
+            ;;
 
-        # Web development
-        js|jsx|mjs|cjs|ts|tsx) echo "//"; ;;
-        html|htm|xhtml|shtml) echo "<!--"; ;;
-        ejs|hbs|mustache|handlebars) echo "<!--"; ;;
-        xml|svg|xsl|xslt|rss|atom) echo "<!--"; ;;
-        css|scss|sass|less) echo "/*"; ;;
+        # Web development (<!-- comment)
+        ejs|handlebars|hbs|htm|html|markdown|md|mdown|mkdn|mustache|rss|\
+        shtml|svg|xhtml|xml|xsl|xslt)
+            echo "<!--"
+            ;;
 
-        # Data formats
-        json|jsonc|json5) echo "//"; ;;
-        yaml|yml) echo "#"; ;;
-        toml) echo "#"; ;;
-        ini|cfg|conf) echo ";"; ;;
+        # CSS and preprocessors (/* comment)
+        css|less|sass|scss)
+            echo "/*"
+            ;;
 
-        # Database
-        sql|mysql|pgsql|plsql) echo "--"; ;;
+        # Database languages (-- comment)
+        hs|lhs|lua|mysql|pgsql|plsql|sql)
+            echo "--"
+            ;;
 
-        # Configuration and build
-        Dockerfile|dockerfile) echo "#"; ;;
-        makefile|Makefile|gnumakefile|GNUmakefile) echo "#"; ;;
-        cmake|CMakeLists.txt) echo "#"; ;;
-        hcl|tf|tfvars|tfstate) echo "#"; ;;
+        # Other specific syntaxes
+        ahk|asm|au3|S|s) echo ";";;
+        bat|cmd) echo "REM";;
+        clj|cljc|cljs|edn) echo ";";;
+        cfg|conf|ini) echo ";";;
+        erl|hrl) echo "%";;
+        ex|exs) echo "#";;
+        f|f03|f08|f77|f90|f95) echo "!";;
+        rst) echo "..";;
+        cls|dtx|ins|sty|tex) echo "%";;
+        bas|vb|vbs) echo "'";;
+        vim|vimrc) echo "\"";;
 
-        # Markup and documentation
-        md|markdown|mdown|mkdn) echo "<!--"; ;;
-        rst) echo ".."; ;;
-        tex|sty|cls|dtx|ins) echo "%"; ;;
+        # Special case for PHP
+        php|php3|php4|php5|php7|phar|phtml|phps)
+            [[ "$shebang_line" == *php* ]] && echo "#" || echo "//"
+            ;;
 
-        # Other languages
-        asm|s|S) echo ";"; ;;
-        ps1|psm1|psd1) echo "#"; ;;
-        bat|cmd) echo "REM"; ;;
-        vb|vbs|bas) echo "'"; ;;
-        f|f77|f90|f95|f03|f08) echo "!"; ;;
-        hs|lhs) echo "--"; ;;
-        erl|hrl) echo "%"; ;;
-        ex|exs) echo "#"; ;;
-        clj|cljs|cljc|edn) echo ";"; ;;
-        coffee) echo "#"; ;;
-        r|R|Rmd) echo "#"; ;;
-        vim|vimrc) echo "\""; ;;
-        ahk) echo ";"; ;;
-        au3) echo ";"; ;;
-
-        # Default case (use # for shebang, otherwise //)
+        # Default case
         *)
-            if [[ "$shebang_line" == "#!/"* ]]; then
-                echo "#";
-            else
-                echo "//";
-            fi
+            [[ "$shebang_line" == "#!/"* ]] && echo "#" || echo "//"
             ;;
     esac
 }
@@ -230,12 +241,17 @@ get_comment_close() {
     local ext="${1##*.}"
     case "$ext" in
         # HTML, XML, and Markdown-related languages
-        html|htm|xhtml|shtml|xml|svg|xsl|xslt|rss|atom|ejs|hbs|mustache|handlebars|md|markdown|mdown|mkdn)
-            echo " -->";
+        atom|ejs|handlebars|hbs|htm|html|markdown|md|mdown|mkdn|mustache|\
+        rss|shtml|svg|xhtml|xml|xsl|xslt)
+            echo " -->"
             ;;
         # CSS and CSS preprocessors
-        css|scss|sass|less) echo " */"; ;;
-        *) echo ""; ;;
+        css|less|sass|scss)
+            echo " */"
+            ;;
+        *)
+            echo ""
+            ;;
     esac
 }
 
@@ -254,11 +270,7 @@ generate_separator_line() {
     local comment_start="$1"
     local comment_end="$2"
     local total_length=80
-    local num_spaces=1 # Space after comment_start
-
-    [[ -n "$comment_end" ]] && num_spaces=$((num_spaces + 1)) # Space before comment_end
-
-    local content_length=$((${#comment_start} + ${#comment_end} + num_spaces))
+    local content_length=$((${#comment_start} + ${#comment_end}))
     local num_dashes=$((total_length - content_length))
     local dashes
 
@@ -269,9 +281,9 @@ generate_separator_line() {
     fi
 
     if [[ -n "$comment_end" ]]; then
-        echo "${comment_start} ${dashes} ${comment_end}"
+        printf "%s%s%s\n" "$comment_start" "$dashes" "$comment_end"
     else
-        echo "${comment_start} ${dashes}"
+        printf "%s%s\n" "$comment_start" "$dashes"
     fi
 }
 
@@ -283,9 +295,9 @@ generate_separator_line() {
 mkdir -p "$DEBUG_DIR"
 debug_log "Created debug directory: $DEBUG_DIR"
 
-# Change to the parent directory
-cd "$PARENT_DIR" || exit 1 # Exit with error if cd fails
-debug_log "Changed to directory: $PARENT_DIR"
+# Change to the project root directory
+cd "$PROJECT_ROOT" || exit 1 # Exit with error if cd fails
+debug_log "Changed to directory: $PROJECT_ROOT"
 
 # Remove any existing output files
 rm -f "$OUTPUT_FILE" "$TREE_FILE" "$DEBUG_FILE"
@@ -322,7 +334,7 @@ while IFS= read -r -d '' file; do
     comment_start=$(get_comment_syntax "$file")
     comment_end=$(get_comment_close "$file")
 
-    # **Generate separator line even for the first file:**
+    # Generate separator line even for the first file:
     separator_line=$(generate_separator_line "$comment_start" "$comment_end")
 
     if ! "$first_file"; then
