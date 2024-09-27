@@ -243,11 +243,11 @@ get_comment_close() {
         # HTML, XML, and Markdown-related languages
         atom|ejs|handlebars|hbs|htm|html|markdown|md|mdown|mkdn|mustache|\
         rss|shtml|svg|xhtml|xml|xsl|xslt)
-            echo " -->"
+            echo "-->"
             ;;
         # CSS and CSS preprocessors
         css|less|sass|scss)
-            echo " */"
+            echo "*/"
             ;;
         *)
             echo ""
@@ -382,10 +382,6 @@ echo "" > temp
 cat "$TREE_FILE" temp "$OUTPUT_FILE" > combined_temp && mv combined_temp "$OUTPUT_FILE"
 rm temp
 debug_log "Added tree structure to the top of the combined file with a newline: $TREE_FILE"
-
-# Display the first few lines of the output file
-echo -e "\nFirst few lines of $OUTPUT_FILE:"
-head -n 20 "$OUTPUT_FILE"
 
 # Display the contents of the tree file
 echo -e "\nTree structure (from $TREE_FILE):"
