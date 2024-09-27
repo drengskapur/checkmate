@@ -2,7 +2,12 @@
   "manifest_version": 3,
   "name": "CheckMate",
   "version": "1.0",
-  "description": "A Chrome extension for managing checklists",
+  "description": "Streamline Your Checklists and Workflows",
+  "icons": {
+    "16": "images/logo-icon.svg",
+    "48": "images/logo-icon.svg",
+    "128": "images/logo-icon.svg"
+  },
   "action": {
     "default_popup": "index.html",
     "default_icon": {
@@ -11,11 +16,11 @@
       "128": "images/logo-icon.svg"
     }
   },
-  "permissions": ["storage"],
-  "icons": {
-    "16": "images/logo-icon.svg",
-    "48": "images/logo-icon.svg",
-    "128": "images/logo-icon.svg"
+  "permissions": [
+    "storage"
+  ],
+  "background": {
+    "service_worker": "src/background.js"
   },
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'"
