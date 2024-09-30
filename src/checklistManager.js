@@ -1,6 +1,5 @@
 import { showChecklistView } from './viewManager.js'
 import { showCurrentItem, currentItemIndex } from './carouselManager.js'
-
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
 
@@ -39,7 +38,7 @@ export function addChecklist (filename, content) {
   renderChecklistList()
 }
 
-function renderChecklistList () {
+export function renderChecklistList () {
   const listElement = document.getElementById('checklist-list')
   listElement.innerHTML = checklists
     .map(
