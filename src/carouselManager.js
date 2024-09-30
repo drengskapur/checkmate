@@ -1,5 +1,3 @@
-// src/carouselManager.js
-
 import { checklists, currentChecklistIndex, toggleCurrentTodo } from './checklistManager.js'
 
 export let currentItemIndex = 0
