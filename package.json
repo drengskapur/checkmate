@@ -34,7 +34,7 @@
   "type": "module",
   "dependencies": {
     "@sveltejs/adapter-static": "^3.0.5",
-    "@sveltejs/kit": "^2.6.0",
+    "@sveltejs/kit": "^2.6.1",
     "dompurify": "^3.0.3",
     "marked": "^5.0.4",
     "uuid": "^9.0.0"
