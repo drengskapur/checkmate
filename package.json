@@ -5,7 +5,7 @@
   "scripts": {
     "build": "parcel build src/popup.html src/background.js --dist-dir dist",
     "dev": "parcel src/popup.html src/background.js --dist-dir dist --open",
-    "lint": "standard --fix && eslint src/**/*.js --fix"
+    "lint": "eslint src/**/*.js --fix"
   },
   "author": "Drengskapur",
   "license": "MIT",
@@ -21,7 +21,10 @@
     "eslint-plugin-n": "^15.7.0",
     "eslint-plugin-promise": "^6.1.1",
     "parcel": "^2.12.0",
-    "postcss": "^8.4.25",
-    "standard": "^17.1.2"
+    "postcss": "^8.4.25"
+  },
+  "standard": {
+    "env": ["browser", "es2021", "webextensions"],
+    "globals": ["chrome", "FileReader", "localStorage", "prompt", "confirm", "DOMPurify", "marked"]
   }
 }

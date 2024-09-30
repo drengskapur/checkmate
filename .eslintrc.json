@@ -1,4 +1,5 @@
 {
+  "root": true,
   "extends": "standard",
   "env": {
     "browser": true,
@@ -11,10 +12,7 @@
   },
   "globals": {
     "chrome": "readonly",
-    "FileReader": "readonly",
-    "localStorage": "readonly",
-    "prompt": "readonly",
-    "confirm": "readonly"
+    "window": "readonly"
   },
   "rules": {
     "no-undef": "error",

@@ -16,7 +16,7 @@ export function loadChecklists () {
       }
     })
   } else {
-    const storedChecklists = localStorage.getItem('checklists')
+    const storedChecklists = window.localStorage.getItem('checklists')
     if (storedChecklists) {
       checklists = JSON.parse(storedChecklists)
       renderChecklistList()
@@ -28,7 +28,7 @@ function saveChecklists () {
   if (typeof chrome !== 'undefined' && chrome.storage) {
     chrome.storage.sync.set({ checklists })
   } else {
-    localStorage.setItem('checklists', JSON.stringify(checklists))
+    window.localStorage.setItem('checklists', JSON.stringify(checklists))
   }
 }
 
@@ -92,7 +92,7 @@ function escapeHtml (unsafe) {
 }
 
 function editFilename (index) {
-  const newFilename = prompt('Enter new filename:', checklists[index].filename)
+  const newFilename = window.prompt('Enter new filename:', checklists[index].filename)
   if (newFilename) {
     checklists[index].filename = newFilename
     saveChecklists()
@@ -101,7 +101,7 @@ function editFilename (index) {
 }
 
 function deleteChecklist (index) {
-  if (confirm('Are you sure you want to delete this checklist?')) {
+  if (window.confirm('Are you sure you want to delete this checklist?')) {
     checklists.splice(index, 1)
     saveChecklists()
     renderChecklistList()
