@@ -6,15 +6,15 @@
     "webextensions": true
   },
   "parserOptions": {
-    "ecmaVersion": 13,
+    "ecmaVersion": 2021,
     "sourceType": "module"
   },
   "globals": {
     "chrome": "readonly",
-    "marked": "readonly",
-    "DOMPurify": "readonly",
     "FileReader": "readonly",
-    "localStorage": "readonly"
+    "localStorage": "readonly",
+    "prompt": "readonly",
+    "confirm": "readonly"
   },
   "rules": {
     "no-undef": "error",

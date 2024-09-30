@@ -76,6 +76,7 @@ readonly EXCLUDE_FOLDERS=(
     ".vscode"
     "data"
     "debug"
+    "dist"
     "docs"
     "huggingface"
     "node_modules"
