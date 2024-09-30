@@ -1,4 +1,4 @@
-export function initTheme () {
+export function initTheme() {
   const isDarkMode = window.localStorage.getItem('darkMode') === 'true'
   const body = document.body
   const themeIcon = document.querySelector('#theme-toggle i')
@@ -10,7 +10,7 @@ export function initTheme () {
   }
 }
 
-export function toggleTheme () {
+export function toggleTheme() {
   const body = document.body
   const themeIcon = document.querySelector('#theme-toggle i')
 

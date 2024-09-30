@@ -6,7 +6,7 @@ import DOMPurify from 'dompurify'
 export let checklists = []
 export let currentChecklistIndex = 0
 
-export function loadChecklists () {
+export function loadChecklists() {
   if (typeof chrome !== 'undefined' && chrome.storage) {
     chrome.storage.sync.get('checklists', (data) => {
       if (data.checklists) {
@@ -23,7 +23,7 @@ export function loadChecklists () {
   }
 }
 
-function saveChecklists () {
+function saveChecklists() {
   if (typeof chrome !== 'undefined' && chrome.storage) {
     chrome.storage.sync.set({ checklists })
   } else {
@@ -31,14 +31,14 @@ function saveChecklists () {
   }
 }
 
-export function addChecklist (filename, content) {
+export function addChecklist(filename, content) {
   const todos = parseMarkdown(content)
   checklists.push({ filename, todos })
   saveChecklists()
   renderChecklistList()
 }
 
-export function renderChecklistList () {
+export function renderChecklistList() {
   const listElement = document.getElementById('checklist-list')
   listElement.innerHTML = checklists
     .map(
@@ -68,7 +68,7 @@ export function renderChecklistList () {
   })
 }
 
-function escapeHtml (unsafe) {
+function escapeHtml(unsafe) {
   return unsafe.replace(/[&<>"']/g, (m) => ({
     '&': '&amp;',
     '<': '&lt;',
@@ -78,7 +78,7 @@ function escapeHtml (unsafe) {
   }[m] || m))
 }
 
-function editFilename (index) {
+function editFilename(index) {
   const newFilename = window.prompt('Enter new filename:', checklists[index].filename)
   if (newFilename) {
     checklists[index].filename = newFilename
@@ -87,7 +87,7 @@ function editFilename (index) {
   }
 }
 
-function deleteChecklist (index) {
+function deleteChecklist(index) {
   if (window.confirm('Are you sure you want to delete this checklist?')) {
     checklists.splice(index, 1)
     saveChecklists()
@@ -95,7 +95,7 @@ function deleteChecklist (index) {
   }
 }
 
-function viewChecklist (index) {
+function viewChecklist(index) {
   currentChecklistIndex = index
   document.getElementById('upload-section').style.display = 'none'
   document.getElementById('manage-section').style.display = 'none'
@@ -104,7 +104,7 @@ function viewChecklist (index) {
   showChecklistView()
 }
 
-function parseMarkdown (content) {
+function parseMarkdown(content) {
   const html = marked.parse(content)
   const sanitizedHtml = DOMPurify.sanitize(html)
   const tempElement = document.createElement('div')
@@ -120,7 +120,7 @@ function parseMarkdown (content) {
   })
 }
 
-export function renderChecklist () {
+export function renderChecklist() {
   const checklistView = document.getElementById('checklist-view')
   const todos = checklists[currentChecklistIndex].todos
   checklistView.innerHTML = todos
@@ -143,14 +143,14 @@ export function renderChecklist () {
   })
 }
 
-export function toggleTodo (index) {
+export function toggleTodo(index) {
   const todo = checklists[currentChecklistIndex].todos[index]
   todo.completed = !todo.completed
   saveChecklists()
   renderChecklist()
 }
 
-export function toggleCurrentTodo () {
+export function toggleCurrentTodo() {
   const index = currentItemIndex
   const todo = checklists[currentChecklistIndex].todos[index]
   todo.completed = !todo.completed

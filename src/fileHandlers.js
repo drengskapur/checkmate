@@ -1,24 +1,24 @@
 import { addChecklist } from './checklistManager.js'
 
-export function handleFileSelect (event) {
+export function handleFileSelect(event) {
   const files = event.target.files
   processFiles(files)
 }
 
-export function handleDragOver (event) {
+export function handleDragOver(event) {
   event.stopPropagation()
   event.preventDefault()
   event.dataTransfer.dropEffect = 'copy'
 }
 
-export function handleDrop (event) {
+export function handleDrop(event) {
   event.stopPropagation()
   event.preventDefault()
   const files = event.dataTransfer.files
   processFiles(files)
 }
 
-function processFiles (files) {
+function processFiles(files) {
   Array.from(files).forEach(file => {
     if (file.type === 'text/markdown' || file.name.endsWith('.md')) {
       const reader = new window.FileReader()
