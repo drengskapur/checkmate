@@ -22,7 +22,7 @@ function processFiles(files) {
   Array.from(files).forEach(file => {
     if (file.type === 'text/markdown' || file.name.endsWith('.md')) {
       const reader = new window.FileReader()
-      reader.onload = function (e) {
+      reader.onload = function(e) {
         const content = e.target.result
         addChecklist(file.name, content)
       }
