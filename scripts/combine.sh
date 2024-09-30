@@ -32,32 +32,34 @@
 #
 #===============================================================================
 
-set -x
-
 #-------------------------------------------------------------------------------
 # Exclusion Lists
 #-------------------------------------------------------------------------------
 
 readonly EXCLUDE_FILES=(
     ".DS_Store"
+    ".gitignore"
     "build_features.log"
     "cleaning.log"
+    "CODE_OF_CONDUCT.md"
     "combine.sh"
     "combined.txt"
     "combined.yaml"
+    "CONTRIBUTING.md"
     "dvc.lock"
-    "evaluation.log"
     "evaluate.log"
+    "evaluation.log"
     "ingestion.log"
-    "LICENSE"
     "Makefile"
+    "package-lock.json"
     "preprocessing.log"
-    "README.md"
+    "SECURITY.md"
     "splitting.log"
     "test.sh"
     "Thumbs.db"
     "train.log"
     "update_repository.sh"
+    "update.sh"
     "visualize.log"
 )
 
@@ -67,11 +69,13 @@ readonly EXCLUDE_FOLDERS=(
     ".dvc"
     ".git"
     ".gitea"
-    ".github"
+    ".parcel-cache"
+    ".svelte-kit"
     ".temp"
     ".venv"
     ".vscode"
     "data"
+    "debug"
     "docs"
     "huggingface"
     "node_modules"
@@ -83,11 +87,12 @@ readonly EXCLUDE_FOLDERS=(
 
 readonly EXCLUDE_PATTERNS=(
     "*.log"
-    "*.pyc"
+    "*.md"
     "*.mp3"
     "*.mp4"
     "*.pdf"
     "*.pkl"
+    "*.pyc"
 )
 
 #-------------------------------------------------------------------------------

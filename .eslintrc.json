@@ -1,0 +1,23 @@
+{
+  "extends": "standard",
+  "env": {
+    "browser": true,
+    "es2021": true,
+    "webextensions": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 12,
+    "sourceType": "module"
+  },
+  "globals": {
+    "chrome": "readonly",
+    "marked": "readonly",
+    "DOMPurify": "readonly",
+    "FileReader": "readonly",
+    "localStorage": "readonly"
+  },
+  "rules": {
+    "no-undef": "error",
+    "no-unused-vars": "warn"
+  }
+}

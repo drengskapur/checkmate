@@ -1,42 +1,29 @@
 {
   "name": "checkmate-extension",
-  "version": "1.0.0",
-  "private": true,
+  "version": "1.0.5",
+  "description": "Streamline Your Checklists and Workflows",
   "scripts": {
-    "dev": "vite dev",
-    "build": "vite build",
-    "preview": "vite preview",
-    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-    "lint": "eslint . --ext .js,.ts,.svelte",
-    "format": "standard --fix && prettier --write .",
-    "test": "standard && jest",
-    "test:watch": "jest --watch",
-    "test:e2e": "playwright test"
+    "build": "parcel build src/popup.html src/background.js --dist-dir dist",
+    "dev": "parcel src/popup.html src/background.js --dist-dir dist --open",
+    "lint": "eslint src/**/*.js --fix"
+  },
+  "author": "Drengskapur",
+  "license": "MIT",
+  "dependencies": {
+    "dompurify": "^3.1.7",
+    "marked": "^14.1.2",
+    "tailwindcss": "^3.4.13"
   },
   "devDependencies": {
-    "@playwright/test": "^1.35.0",
-    "@testing-library/jest-dom": "^5.16.5",
-    "@types/node": "^22.7.4",
-    "@typescript-eslint/eslint-plugin": "^5.59.9",
-    "@typescript-eslint/parser": "^5.59.9",
-    "autoprefixer": "^10.4.14",
-    "daisyui": "^3.1.6",
-    "eslint": "^8.42.0",
-    "eslint-config-prettier": "^8.8.0",
-    "jest": "^29.5.0",
-    "jest-environment-jsdom": "^29.5.0",
-    "postcss": "^8.4.24",
-    "prettier": "^2.8.8",
-    "tailwindcss": "^3.3.2",
-    "ts-jest": "^29.1.0",
-    "typescript": "^5.1.3"
-  },
-  "type": "module",
-  "dependencies": {
-    "@sveltejs/adapter-static": "^3.0.5",
-    "@sveltejs/kit": "^2.6.1",
-    "dompurify": "^3.0.3",
-    "marked": "^5.0.4",
-    "uuid": "^9.0.0"
+    "@babel/core": "^7.20.12",
+    "@babel/preset-env": "^7.20.2",
+    "autoprefixer": "^10.4.20",
+    "eslint": "^8.45.0",
+    "eslint-config-standard": "^17.0.0",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-n": "^15.7.0",
+    "eslint-plugin-promise": "^6.1.1",
+    "parcel": "^2.12.0",
+    "postcss": "^8.4.47"
   }
 }
