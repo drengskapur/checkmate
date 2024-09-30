@@ -10,11 +10,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const manageBtn = document.getElementById('manage-btn')
   const fileInput = document.getElementById('file-input')
   const dropZone = document.getElementById('drop-zone')
-  const checklistViewBtn = document.getElementById('checklist-view-btn')
-  const carouselViewBtn = document.getElementById('carousel-view-btn')
-  const prevBtn = document.getElementById('prev-btn')
-  const nextBtn = document.getElementById('next-btn')
   const themeToggle = document.getElementById('theme-toggle')
+  const main = document.querySelector('main')
 
   // Event Listeners
   uploadBtn.addEventListener('click', showUploadSection)
@@ -22,11 +19,19 @@ document.addEventListener('DOMContentLoaded', () => {
   fileInput.addEventListener('change', handleFileSelect)
   dropZone.addEventListener('dragover', handleDragOver)
   dropZone.addEventListener('drop', handleDrop)
-  checklistViewBtn.addEventListener('click', showChecklistView)
-  carouselViewBtn.addEventListener('click', showCarouselView)
-  prevBtn.addEventListener('click', showPreviousItem)
-  nextBtn.addEventListener('click', showNextItem)
   themeToggle.addEventListener('click', toggleTheme)
+
+  main.addEventListener('click', (event) => {
+    if (event.target.matches('#checklist-view-btn')) {
+      showChecklistView()
+    } else if (event.target.matches('#carousel-view-btn')) {
+      showCarouselView()
+    } else if (event.target.matches('#prev-btn')) {
+      showPreviousItem()
+    } else if (event.target.matches('#next-btn')) {
+      showNextItem()
+    }
+  })
 
   // Load checklists on startup
   loadChecklists()

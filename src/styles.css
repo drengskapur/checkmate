@@ -1,6 +1,6 @@
-@import 'tailwindcss/base';
-@import 'tailwindcss/components';
-@import 'tailwindcss/utilities';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 /* Custom styles */
 :root {
@@ -19,4 +19,34 @@
   --border-color: #555555;
 }
 
-/* Additional custom styles as needed */
+/* Tailwind component overrides */
+header {
+  @apply flex items-center justify-between p-4 bg-background;
+}
+
+nav {
+  @apply flex justify-around bg-background;
+}
+
+.nav-btn {
+  @apply text-text font-semibold py-2 px-4 rounded hover:bg-primary hover:text-white;
+}
+
+.view-btn {
+  @apply text-text font-semibold py-1 px-2 rounded hover:bg-primary hover:text-white;
+}
+
+.icon-btn {
+  @apply text-text hover:text-primary;
+}
+
+.todo-item {
+  @apply flex items-center space-x-2;
+}
+
+/* Responsive design improvements */
+@media (max-width: 640px) {
+  .nav-btn {
+    @apply text-sm;
+  }
+}

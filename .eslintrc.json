@@ -1,13 +1,16 @@
 {
   "root": true,
-  "extends": "standard",
+  "extends": [
+    "eslint:recommended",
+    "standard"
+  ],
   "env": {
     "browser": true,
     "es2021": true,
     "webextensions": true
   },
   "parserOptions": {
-    "ecmaVersion": 2021,
+    "ecmaVersion": 2022,
     "sourceType": "module"
   },
   "globals": {
@@ -16,6 +19,9 @@
   },
   "rules": {
     "no-undef": "error",
-    "no-unused-vars": "warn"
+    "no-unused-vars": "warn",
+    "no-console": "off",
+    "prefer-const": "error",
+    "eqeqeq": "error"
   }
 }

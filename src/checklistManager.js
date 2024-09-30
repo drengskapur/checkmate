@@ -8,7 +8,7 @@ export let currentChecklistIndex = 0
 
 export function loadChecklists () {
   if (typeof chrome !== 'undefined' && chrome.storage) {
-    chrome.storage.sync.get('checklists', function (data) {
+    chrome.storage.sync.get('checklists', (data) => {
       if (data.checklists) {
         checklists = data.checklists
         renderChecklistList()
@@ -43,51 +43,39 @@ export function renderChecklistList () {
   listElement.innerHTML = checklists
     .map(
       (checklist, index) => `
-      <div class="checklist-item">
-        <span class="filename">${escapeHtml(checklist.filename)}</span>
-        <button class="edit-btn" data-index="${index}"><i class="fas fa-edit"></i></button>
-        <button class="delete-btn" data-index="${index}"><i class="fas fa-trash"></i></button>
-        <button class="view-btn" data-index="${index}"><i class="fas fa-eye"></i></button>
-      </div>
-    `
+        <div class="checklist-item">
+          <span class="filename">${escapeHtml(checklist.filename)}</span>
+          <button class="edit-btn" data-index="${index}" aria-label="Edit"><i class="fas fa-edit"></i></button>
+          <button class="delete-btn" data-index="${index}" aria-label="Delete"><i class="fas fa-trash"></i></button>
+          <button class="view-btn" data-index="${index}" aria-label="View"><i class="fas fa-eye"></i></button>
+        </div>
+      `
     )
     .join('')
 
-  // Add event listeners
-  listElement.querySelectorAll('.edit-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const index = btn.getAttribute('data-index')
+  // Event delegation
+  listElement.addEventListener('click', (event) => {
+    const target = event.target.closest('button')
+    if (!target) return
+    const index = target.getAttribute('data-index')
+    if (target.classList.contains('edit-btn')) {
       editFilename(index)
-    })
-  })
-
-  listElement.querySelectorAll('.delete-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const index = btn.getAttribute('data-index')
+    } else if (target.classList.contains('delete-btn')) {
       deleteChecklist(index)
-    })
-  })
-
-  listElement.querySelectorAll('.view-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const index = btn.getAttribute('data-index')
+    } else if (target.classList.contains('view-btn')) {
       viewChecklist(index)
-    })
+    }
   })
 }
 
 function escapeHtml (unsafe) {
-  return unsafe.replace(/[&<>"']/g, function (m) {
-    return (
-      {
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#039;'
-      }[m] || m
-    )
-  })
+  return unsafe.replace(/[&<>"']/g, (m) => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  }[m] || m))
 }
 
 function editFilename (index) {
@@ -122,7 +110,7 @@ function parseMarkdown (content) {
   const tempElement = document.createElement('div')
   tempElement.innerHTML = sanitizedHtml
   const listItems = tempElement.querySelectorAll('li')
-  return Array.from(listItems).map(item => {
+  return Array.from(listItems).map((item) => {
     const checkbox = item.querySelector('input[type="checkbox"]')
     const completed = checkbox ? checkbox.checked : false
     return {
@@ -138,20 +126,20 @@ export function renderChecklist () {
   checklistView.innerHTML = todos
     .map(
       (todo, index) => `
-      <div class="todo-item">
-        <input type="checkbox" id="todo-${index}" ${todo.completed ? 'checked' : ''} data-index="${index}">
-        <label for="todo-${index}">${todo.text}</label>
-      </div>
-    `
+        <div class="todo-item">
+          <input type="checkbox" id="todo-${index}" ${todo.completed ? 'checked' : ''} data-index="${index}">
+          <label for="todo-${index}">${escapeHtml(todo.text)}</label>
+        </div>
+      `
     )
     .join('')
 
-  // Add event listeners
-  checklistView.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-    checkbox.addEventListener('change', () => {
-      const index = checkbox.getAttribute('data-index')
+  // Event delegation
+  checklistView.addEventListener('change', (event) => {
+    if (event.target.matches('input[type="checkbox"]')) {
+      const index = event.target.getAttribute('data-index')
       toggleTodo(index)
-    })
+    }
   })
 }
 
