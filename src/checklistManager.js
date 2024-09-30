@@ -38,13 +38,13 @@ function renderChecklistList() {
   listElement.innerHTML = checklists
     .map(
       (checklist, index) => `
-    <div class="checklist-item">
-      <span class="filename">${escapeHtml(checklist.filename)}</span>
-      <button class="edit-btn" data-index="${index}"><i class="fas fa-edit"></i></button>
-      <button class="delete-btn" data-index="${index}"><i class="fas fa-trash"></i></button>
-      <button class="view-btn" data-index="${index}"><i class="fas fa-eye"></i></button>
-    </div>
-  `
+      <div class="checklist-item">
+        <span class="filename">${escapeHtml(checklist.filename)}</span>
+        <button class="edit-btn" data-index="${index}"><i class="fas fa-edit"></i></button>
+        <button class="delete-btn" data-index="${index}"><i class="fas fa-trash"></i></button>
+        <button class="view-btn" data-index="${index}"><i class="fas fa-eye"></i></button>
+      </div>
+    `
     )
     .join('');
 
@@ -133,12 +133,11 @@ function renderChecklist() {
   checklistView.innerHTML = todos
     .map(
       (todo, index) => `
-    <div class="todo-item">
-      <input type="checkbox" id="todo-${index}" ${todo.completed ? 'checked' : ''
-        } data-index="${index}">
-      <label for="todo-${index}">${todo.text}</label>
-    </div>
-  `
+      <div class="todo-item">
+        <input type="checkbox" id="todo-${index}" ${todo.completed ? 'checked' : ''} data-index="${index}">
+        <label for="todo-${index}">${todo.text}</label>
+      </div>
+    `
     )
     .join('');
 

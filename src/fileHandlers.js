@@ -26,7 +26,7 @@ function processFiles(files) {
       };
       reader.readAsText(file);
     } else {
-      console.warn(\`File \${file.name} is not a Markdown file and was skipped.\`);
+      console.warn(`File ${file.name} is not a Markdown file and was skipped.`);
     }
   });
 }

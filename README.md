@@ -36,8 +36,8 @@ CheckMate is a Chrome extension that transforms markdown checklists into interac
 
 ## Technical Details
 
-- Built with SvelteKit and TypeScript for a responsive, efficient user interface
-- Styled using Tailwind CSS and DaisyUI for a clean, professional look
+- Built with standard web technologies for compatibility and performance
+- Styled using Tailwind CSS for a clean, professional look
 - Utilizes browser storage for data persistence without external dependencies
 
 ## Getting Started
@@ -50,28 +50,28 @@ CheckMate is a Chrome extension that transforms markdown checklists into interac
    git clone https://github.com/drengskapur/checkmate.git
    ```
 
-1. Navigate to the project directory:
+2. Navigate to the project directory:
 
    ```bash
    cd checkmate
    ```
 
-1. Install dependencies:
+3. Install dependencies:
 
    ```bash
    npm install
    ```
 
-1. Build the extension:
+4. Build the extension:
 
    ```bash
    npm run build
    ```
 
-1. Load in Chrome:
+5. Load in Chrome:
    - Open `chrome://extensions/`
    - Enable "Developer mode"
-   - Click "Load unpacked" and select the `build` directory
+   - Click "Load unpacked" and select the `dist` directory
 
 ### Development
 
@@ -116,6 +116,7 @@ If you encounter issues or have questions, please file an issue on our [GitHub I
 CheckMate is open-source software licensed under the [MIT license](LICENSE).
 
 ---
+
 <p align="center">
   <img src="static/images/logo-icon.svg" alt="CheckMate Icon" width="50">
 </p>
