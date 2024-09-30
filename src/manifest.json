@@ -4,19 +4,20 @@
   "version": "1.0.5",
   "description": "Streamline Your Checklists and Workflows",
   "action": {
-    "default_popup": "dist/popup.html"
+    "default_popup": "popup.html"
   },
   "permissions": [
     "storage",
     "activeTab"
   ],
   "icons": {
-    "16": "images/logo-icon.svg",
-    "48": "images/logo-icon.svg",
-    "128": "images/logo-icon.svg"
+    "16": "static/images/logo-icon.svg",
+    "48": "static/images/logo-icon.svg",
+    "128": "static/images/logo-icon.svg"
   },
   "background": {
-    "service_worker": "dist/background.js"
+    "service_worker": "background.js",
+    "type": "module"
   },
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'"
