@@ -1,5 +1,5 @@
-import { defineConfig } from 'vite'
-import { svelte } from '@sveltejs/vite-plugin-svelte'
+import { defineConfig } from "vite";
+import { svelte } from "@sveltejs/vite-plugin-svelte";
 
 export default defineConfig({
   plugins: [svelte()],
@@ -7,13 +7,13 @@ export default defineConfig({
     emptyOutDir: true,
     rollupOptions: {
       input: {
-        popup: 'src/main.ts',
-        background: 'src/background.ts'
+        popup: "src/main.ts",
+        background: "src/background.ts",
       },
       output: {
-        entryFileNames: '[name].js'
-      }
-    }
+        entryFileNames: "[name].js",
+      },
+    },
   },
-  publicDir: 'public'
-})
+  publicDir: "public",
+});
