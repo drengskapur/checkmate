@@ -4,6 +4,7 @@ import { svelte } from "@sveltejs/vite-plugin-svelte";
 export default defineConfig({
   plugins: [svelte()],
   build: {
+    target: "es2016",
     emptyOutDir: true,
     rollupOptions: {
       input: {
@@ -12,6 +13,7 @@ export default defineConfig({
       },
       output: {
         entryFileNames: "[name].js",
+        format: "es",
       },
     },
   },
