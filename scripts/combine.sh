@@ -26,7 +26,7 @@
 #   - This script should be run from the 'scripts' directory.
 #   - Customize the exclusion patterns in the HERE document as needed.
 #
-# VERSION: 5.6
+# VERSION: 5.7
 #
 # AUTHOR: Drenskapur
 #
@@ -94,6 +94,7 @@ notebooks/
 scripts/
 terraform/
 venv/
+.github/
 EOF
 
 #-------------------------------------------------------------------------------
@@ -136,7 +137,7 @@ get_project_root() {
     done
 
     # If no project root found, use the script's parent directory
-    echo "$(dirname "$script_dir")"
+    dirname "$script_dir"
 }
 
 #-------------------------------------------------------------------------------
@@ -193,62 +194,33 @@ get_comment_syntax() {
 
     case "$ext" in
     # Shell and scripting languages (# comment)
-    ash | bash | cmake | coffee | csh | dash | Dockerfile | dockerfile | hcl | ksh | makefile | Makefile | pl | pm | pod | \
-        ps1 | psd1 | psm1 | py | pyd | pyi | pyo | pyc | pxd | pxi | pyw | pyx | r | R | rake | rb | rbw | \
-        Rmd | sh | t | tcl | tf | tfstate | tfvars | tk | toml | xonsh | yaml | yml | zsh)
+    sh | bash | zsh | csh | ksh | tcl | tk | py | pl | rb | php | R | r | js | \
+        css | scss | less | html | xml | yaml | yml | json | ini | conf | cfg | \
+        Dockerfile | dockerfile | Dockerfile.* | Makefile | makefile | ps1 | psd1 | psm1)
         echo "#"
         ;;
-
     # C-style languages (// comment)
-    c | c++ | cc | cpp | cs | cxx | d | di | go | h | h++ | hh | hpp | hxx | i | ii | java | js | json | \
-        json5 | jsonc | jsx | kt | kts | m | mjs | mm | rs | rlib | scala | swift | ts | tsx)
+    c | h | cpp | hpp | cc | cxx | java | cs | go | rs | swift | kt | m | mm)
         echo "//"
         ;;
-
-    # Web development (<!-- comment)
-    ejs | handlebars | hbs | htm | html | markdown | md | mdown | mkdn | mustache | rss | \
-        shtml | svg | xhtml | xml | xsl | xslt)
+    # HTML and XML (<!-- comment)
+    html | htm | xhtml | xml | xslt)
         echo "<!--"
         ;;
-
-    # CSS and preprocessors (/* comment)
-    css | less | sass | scss)
+    # CSS and SCSS (/* comment)
+    css | scss | less)
         echo "/*"
         ;;
-
-    # Database languages (-- comment)
-    hs | lhs | lua | mysql | pgsql | plsql | sql)
+    # SQL (-- comment)
+    sql)
         echo "--"
         ;;
-
-    # Other specific syntaxes
-    ahk | asm | au3 | S | s) echo ";" ;;
-    bat | cmd) echo "REM" ;;
-    clj | cljc | cljs | edn) echo ";" ;;
-    cfg | conf | ini) echo ";" ;;
-    erl | hrl) echo "%" ;;
-    ex | exs) echo "#" ;;
-    f | f03 | f08 | f77 | f90 | f95) echo "!" ;;
-    rst) echo ".." ;;
-    cls | dtx | ins | sty | tex) echo "%" ;;
-    bas | vb | vbs) echo "'" ;;
-    vim | vimrc) echo "\"" ;;
-
-    # Special case for PHP
-    php | php3 | php4 | php5 | php7 | phar | phtml | phps)
-        if [[ "$shebang_line" == *php* ]]; then
-            echo "#"
-        else
-            echo "//"
-        fi
-        ;;
-
-    # Default case
+    # Default to hash (#) for unknown extensions with shebang
     *)
         if [[ "$shebang_line" == "#!"* ]]; then
             echo "#"
         else
-            echo "//"
+            echo "#"
         fi
         ;;
     esac
@@ -268,12 +240,10 @@ get_comment_syntax() {
 get_comment_close() {
     local ext="${1##*.}"
     case "$ext" in
-    # HTML, XML, and Markdown-related languages
-    ejs | handlebars | hbs | htm | html | markdown | md | mdown | mkdn | mustache | rss | shtml | svg | xhtml | xml | xsl | xslt)
+    html | htm | xhtml | xml | xslt)
         echo "-->"
         ;;
-    # CSS and CSS preprocessors
-    css | less | sass | scss)
+    css | scss | less)
         echo "*/"
         ;;
     *)
@@ -334,15 +304,10 @@ setup_environment() {
 #-------------------------------------------------------------------------------
 # Function: generate_find_exclude_args
 #   Converts exclusion patterns to find command exclusion arguments.
-#
-# Arguments:
-#   None (uses the EXCLUDE_PATTERNS variable)
-#
-# Returns:
-#   Prints the find command arguments required to exclude the patterns.
+#   Populates the find_exclude_args array.
 #-------------------------------------------------------------------------------
 generate_find_exclude_args() {
-    local -a find_args=()
+    find_exclude_args=()
     local IFS=$'\n'
     local pattern
     for pattern in $EXCLUDE_PATTERNS; do
@@ -352,28 +317,16 @@ generate_find_exclude_args() {
         # Handle directory patterns (ending with '/')
         if [[ "$pattern" == */ ]]; then
             pattern="${pattern%/}"
-            find_args+=(-path "./$pattern" -o)
+            find_exclude_args+=(-path "./$pattern" -prune -o)
         elif [[ "$pattern" == /* ]]; then
             # Patterns starting with '/' are relative to the project root
             pattern="${pattern#/}"
-            find_args+=(-path "./$pattern" -o)
+            find_exclude_args+=(-path "./$pattern" -prune -o)
         else
-            # Handle wildcard patterns
-            find_args+=(-name "$pattern" -o)
+            # Handle wildcard patterns and specific files
+            find_exclude_args+=(-name "$pattern" -prune -o)
         fi
     done
-
-    # Remove the last '-o' operator
-    if [ "${#find_args[@]}" -gt 0 ]; then
-        unset 'find_args[${#find_args[@]}-1]'
-    fi
-
-    # If there are patterns, wrap them in parentheses
-    if [ "${#find_args[@]}" -gt 0 ]; then
-        echo "(" "${find_args[@]}" ")" -prune -o
-    else
-        echo ""
-    fi
 }
 
 #-------------------------------------------------------------------------------
@@ -385,15 +338,16 @@ generate_find_exclude_args() {
 combine_files() {
     local first_file=true
     local included_files_list="$DEBUG_DIR/included_files.txt"
-    >"$included_files_list" # Initialize or clear the file
+    : >"$included_files_list" # Initialize or clear the file
 
-    # Convert exclusion patterns to find exclude arguments
-    local FIND_EXCLUDE_ARGS
-    # Use an array to handle special characters correctly
-    IFS=' ' read -r -a FIND_EXCLUDE_ARGS <<<"$(generate_find_exclude_args)"
+    # Generate exclusion arguments
+    generate_find_exclude_args
+
+    # Debug: Print the find command
+    debug_log "Find command: find . ${find_exclude_args[*]} -type f -size -${MAX_FILE_SIZE_KB}k -print0"
 
     # Build the find command and process files
-    find . "${FIND_EXCLUDE_ARGS[@]}" -type f -size -"${MAX_FILE_SIZE_KB}"k -print0 |
+    find . "${find_exclude_args[@]}" -type f -size -"${MAX_FILE_SIZE_KB}"k -print0 |
         while IFS= read -r -d '' file; do
             # Save the file to the list of included files
             echo "$file" >>"$included_files_list"
@@ -425,10 +379,10 @@ combine_files() {
 
 #-------------------------------------------------------------------------------
 # Function: generate_tree_structure
-#   Generates a tree structure of the included files.
+#   Generates a tree structure of the included files using pure Bash.
 #-------------------------------------------------------------------------------
 generate_tree_structure() {
-    echo "Generating tree structure..."
+    echo "Generating tree structure using Bash..."
 
     local included_files_list="$DEBUG_DIR/included_files.txt"
     local tree_output="$TREE_FILE"
@@ -438,59 +392,119 @@ generate_tree_structure() {
         return
     fi
 
-    # Extract unique directory paths from the included files
-    awk -F'/' '
-    {
-        for (i=2; i<=NF; i++) {
-            dir=""
-            for (j=2; j<=i; j++) {
-                dir = dir"/"$j
-            }
-            print dir
-        }
-    }' "$included_files_list" | sort -u >"$DEBUG_DIR/tree_paths.txt"
+    # Extract unique paths from the included files and sort them
+    sed 's#^\./##' "$included_files_list" | sort >"$DEBUG_DIR/tree_paths.txt"
 
-    # Generate the tree-like structure
-    python3 - "$DEBUG_DIR/tree_paths.txt" "$PROJECT_ROOT" <<'EOF' >"$TREE_FILE"
-import sys
-import os
+    # Build a tree structure as associative arrays
+    declare -A children
 
-def build_tree(paths):
-    tree = {}
-    for path in paths:
-        parts = path.strip("/").split("/")
-        current_level = tree
-        for part in parts:
-            if part not in current_level:
-                current_level[part] = {}
-            current_level = current_level[part]
-    return tree
+    while IFS= read -r path; do
+        # Remove leading './' and make paths relative
+        path="${path#./}"
 
-def print_tree(tree, prefix=""):
-    keys = sorted(tree.keys())
-    for idx, key in enumerate(keys):
-        connector = "└── " if idx == len(keys) -1 else "├── "
-        print(prefix + connector + key)
-        next_prefix = prefix + ("    " if idx == len(keys) -1 else "│   ")
-        print_tree(tree[key], next_prefix)
+        # Split the path into components
+        IFS='/' read -ra parts <<< "$path"
 
-if __name__ == "__main__":
-    with open(sys.argv[1], "r") as f:
-        paths = [line.strip() for line in f if line.strip()]
-    tree = build_tree(paths)
-    print(sys.argv[2])
-    print_tree(tree)
-EOF
+        # Initialize parent
+        local parent="."
+
+        # For each component except the last (the file), build directories
+        for ((i=0; i<${#parts[@]}-1; i++)); do
+            dir="${parts[i]}"
+            full_path="$parent/$dir"
+            # Remove leading './' and extra slashes
+            full_path="${full_path#./}"
+            full_path="${full_path#/}"
+
+            # Add dir to the children of parent
+            if [[ -z "${children["$parent"]}" ]]; then
+                children["$parent"]="$dir"
+            else
+                # Check if dir is already in children[parent]
+                if ! grep -qx "$dir" <<< "${children["$parent"]}"; then
+                    children["$parent"]+=$'\n'"$dir"
+                fi
+            fi
+            parent="$full_path"
+        done
+
+        # Now add the file to the children of the last parent
+        file="${parts[-1]}"
+        if [[ -z "${children["$parent"]}" ]]; then
+            children["$parent"]="$file"
+        else
+            # Check if file is already in children[parent]
+            if ! grep -qx "$file" <<< "${children["$parent"]}"; then
+                children["$parent"]+=$'\n'"$file"
+            fi
+        fi
+
+    done <"$DEBUG_DIR/tree_paths.txt"
+
+    # Function to recursively print the tree
+    print_tree() {
+        local prefix="$1"
+        local dir="$2"
+        local entries
+
+        # Get the list of children, split into an array
+        IFS=$'\n' read -d '' -r -a entries < <(printf '%s\0' "${children["$dir"]}")
+
+        local i
+        local count=${#entries[@]}
+
+        for ((i = 0; i < count; i++)); do
+            local entry="${entries[i]}"
+            local path
+            if [[ "$dir" == "." ]]; then
+                path="$entry"
+            else
+                path="$dir/$entry"
+            fi
+            local connector
+            local new_prefix
+
+            if ((i == count - 1)); then
+                connector="└── "
+                new_prefix="$prefix    "
+            else
+                connector="├── "
+                new_prefix="$prefix│   "
+            fi
+
+            echo "${prefix}${connector}${entry}" >>"$tree_output"
+
+            # If this entry has children, recurse
+            if [[ -n "${children["$path"]}" ]]; then
+                print_tree "$new_prefix" "$path"
+            fi
+        done
+    }
+
+    # Start printing from the root directory '.'
+    echo "." >"$tree_output"
+    print_tree "" "."
 
     echo "Tree structure saved to $TREE_FILE"
 
-    # Prepend the tree structure to the combined file
-    cat "$TREE_FILE" "$OUTPUT_FILE" >combined_temp && mv combined_temp "$OUTPUT_FILE"
-    debug_log "Added tree structure to the top of the combined file: $TREE_FILE"
+    # Safely prepend the tree structure to the combined file
+
+    # Create a temporary copy of OUTPUT_FILE to prevent reading and writing to the same file
+    temp_output_data="$(mktemp "$DEBUG_DIR/temp_output_data.XXXXXX")"
+    cp "$OUTPUT_FILE" "$temp_output_data"
+
+    # Concatenate the tree and temporary output data into a new temporary file
+    temp_output="$(mktemp "$DEBUG_DIR/temp_combined_output.XXXXXX")"
+    cat "$TREE_FILE" "$temp_output_data" >"$temp_output"
+
+    # Overwrite the OUTPUT_FILE after closing all reads to avoid conflict
+    mv "$temp_output" "$OUTPUT_FILE"
 
     # Clean up temporary files
+    rm -f "$temp_output_data"
     rm -f "$DEBUG_DIR/tree_paths.txt"
     rm -f "$included_files_list"
+    debug_log "Added tree structure to the top of the combined file: $TREE_FILE"
     debug_log "Cleaned up temporary files."
 }
 
