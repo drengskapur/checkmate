@@ -1,6 +1,5 @@
 <script lang="ts">
   import { checklistStore } from '$lib/stores/checklistStore';
-  import type { ChecklistItem, ActiveChecklist } from '$lib/stores/checklistStore';
   import { renderTodoText } from '$lib/utils/markdown';
   import {
     provideFluentDesignSystem,
@@ -8,7 +7,8 @@
     fluentCard,
     fluentCheckbox,
     fluentSelect,
-    fluentOption
+    fluentOption,
+    fluentProgressRing
   } from '@fluentui/web-components';
 
   provideFluentDesignSystem().register(
@@ -16,7 +16,8 @@
     fluentCard(),
     fluentCheckbox(),
     fluentSelect(),
-    fluentOption()
+    fluentOption(),
+    fluentProgressRing()
   );
 
   let selectedChecklist: string | null = null;
@@ -26,6 +27,10 @@
   $: currentChecklist = $checklistStore.activeChecklists.find(
     (cl: ActiveChecklist) => cl.id === selectedChecklist
   );
+
+  $: progress = currentChecklist
+    ? Math.round((currentChecklist.items.filter((item: { checked: any; }) => item.checked).length / currentChecklist.items.length) * 100)
+    : 0;
 
   function nextItem() {
     if (currentChecklist) {
@@ -41,7 +46,7 @@
   }
 
   function updateItem(checklist: ActiveChecklist, item: ChecklistItem) {
-    const updatedItems = checklist.items.map((i) =>
+    const updatedItems = checklist.items.map((i: { id: any; checked: any; }) =>
       i.id === item.id ? { ...i, checked: !i.checked } : i
     );
     checklistStore.updateActiveChecklist(checklist.id, updatedItems);
@@ -71,25 +76,31 @@
       {/each}
     </fluent-select>
     {#if currentChecklist}
-      <div class="flex justify-center mb-4">
-        <fluent-button
-          role="button"
-          tabindex="0"
-          appearance={viewMode === 'list' ? 'accent' : 'lightweight'}
-          on:click={() => (viewMode = 'list')}
-          on:keydown={(e) => handleKeydown(e, () => (viewMode = 'list'))}
-        >
-          List
-        </fluent-button>
-        <fluent-button
-          role="button"
-          tabindex="0"
-          appearance={viewMode === 'carousel' ? 'accent' : 'lightweight'}
-          on:click={() => (viewMode = 'carousel')}
-          on:keydown={(e) => handleKeydown(e, () => (viewMode = 'carousel'))}
-        >
-          Carousel
-        </fluent-button>
+      <div class="flex justify-between items-center mb-4">
+        <div class="flex justify-center">
+          <fluent-button
+            role="button"
+            tabindex="0"
+            appearance={viewMode === 'list' ? 'accent' : 'lightweight'}
+            on:click={() => (viewMode = 'list')}
+            on:keydown={(e) => handleKeydown(e, () => (viewMode = 'list'))}
+          >
+            List
+          </fluent-button>
+          <fluent-button
+            role="button"
+            tabindex="0"
+            appearance={viewMode === 'carousel' ? 'accent' : 'lightweight'}
+            on:click={() => (viewMode = 'carousel')}
+            on:keydown={(e) => handleKeydown(e, () => (viewMode = 'carousel'))}
+          >
+            Carousel
+          </fluent-button>
+        </div>
+        <fluent-progress-ring
+          value={progress}
+          aria-label={`Checklist progress: ${progress}%`}
+        ></fluent-progress-ring>
       </div>
       {#if viewMode === 'list'}
         {#each currentChecklist.items as item}
@@ -109,6 +120,7 @@
             tabindex="0"
             on:click={prevItem}
             on:keydown={(e) => handleKeydown(e, prevItem)}
+            aria-label="Previous item"
           >
             &lt;
           </fluent-button>
@@ -129,6 +141,7 @@
             tabindex="0"
             on:click={nextItem}
             on:keydown={(e) => handleKeydown(e, nextItem)}
+            aria-label="Next item"
           >
             &gt;
           </fluent-button>
