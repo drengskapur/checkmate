@@ -42,7 +42,6 @@ read -r -d '' EXCLUDE_PATTERNS <<'EOF'
 .DS_Store
 .gitignore
 *.log
-*.md
 *.mp3
 *.mp4
 *.pdf
@@ -51,27 +50,15 @@ read -r -d '' EXCLUDE_PATTERNS <<'EOF'
 Thumbs.db
 
 # Exclude specific files
-build_features.log
-cleaning.log
-CODE_OF_CONDUCT.md
 combine.sh
 combined.txt
 combined.yaml
-CONTRIBUTING.md
 dvc.lock
-evaluate.log
-evaluation.log
-ingestion.log
 Makefile
 package-lock.json
-preprocessing.log
-SECURITY.md
-splitting.log
 test.sh
-train.log
 update_repository.sh
 update.sh
-visualize.log
 
 # Exclude directories
 __pycache__/
