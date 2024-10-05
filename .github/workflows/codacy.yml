@@ -1,0 +1,36 @@
+name: Codacy Security Scan
+
+on:
+  schedule:
+    - cron: "0 0,12 * * *" # Run this job at 00:00 (midnight) and 12:00 (noon) every day
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  codacy-security-scan:
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+    name: Codacy Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v4.2.0
+
+      - name: Run Codacy Analysis CLI
+        uses: codacy/codacy-analysis-cli-action@97bf5df3c09e75f5bcd72695998f96ebd701846e # v4.4.5
+        with:
+          verbose: true
+          format: sarif
+          output: results.sarif
+          gh-code-scanning-compat: true
+          max-allowed-issues: 2147483647
+
+      - name: Upload SARIF results file
+        uses: github/codeql-action/upload-sarif@5618c9fc1e675841ca52c1c6b1304f5255a905a0 # codeql-bundle-v2.19.0
+        with:
+          sarif_file: results.sarif
+          category: codacy
