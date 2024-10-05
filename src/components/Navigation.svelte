@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { currentSection } from '@stores/navigationStore';
+  import { currentSection } from '../stores/navigationStore';
   import { provideFluentDesignSystem, fluentButton } from '@fluentui/web-components';
 
   provideFluentDesignSystem().register(fluentButton());

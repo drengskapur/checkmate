@@ -1,4 +1,3 @@
-<!-- src/lib/components/ViewSection.svelte -->
 <script lang="ts">
   import { checklistStore } from "../stores/checklistStore";
   import type { ActiveChecklist, ChecklistItem } from "../stores/checklistStore";
@@ -81,4 +80,3 @@
   }
 </script>
 
-<!-- Rest of your component HTML remains unchanged -->

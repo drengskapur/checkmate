@@ -1,4 +1,3 @@
-<!-- src/lib/components/UploadSection.svelte -->
 <script lang="ts">
   import { checklistStore } from "../stores/checklistStore";
   import { parseMarkdown } from "../utils/markdown";
