@@ -1,0 +1,7 @@
+{
+    "recommendations": [
+        "svelte.svelte-vscode",
+        "ms-vscode.js-debug-nightly",
+        "christian-kohler.npm-intellisense"
+    ]
+}
