@@ -1,10 +1,10 @@
 {
-    "recommendations": [
-        "svelte.svelte-vscode",
-        "ms-vscode.js-debug-nightly",
-        "christian-kohler.npm-intellisense",
-        "jock.svg",
-        "ardenivanov.svelte-intellisense",
-        "leizongmin.node-module-intellisense"
-    ]
+  "recommendations": [
+    "svelte.svelte-vscode",
+    "ms-vscode.js-debug-nightly",
+    "christian-kohler.npm-intellisense",
+    "jock.svg",
+    "ardenivanov.svelte-intellisense",
+    "leizongmin.node-module-intellisense"
+  ]
 }
