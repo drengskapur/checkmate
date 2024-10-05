@@ -7,13 +7,12 @@ export default defineConfig({
   build: {
     rollupOptions: {
       input: {
-        popup: "src/main.ts",       // Entry point for the popup
-        background: "src/background.ts", // Entry point for the background script
+        popup: "src/main.ts",
+        background: "src/background.ts"
       },
       output: {
-        entryFileNames: "[name].js", // Output files will be named based on the entry point names
-      },
-    },
-  },
+        entryFileNames: "[name].js"
+      }
+    }
+  }
 });
-

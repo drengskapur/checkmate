@@ -5,16 +5,18 @@
   provideFluentDesignSystem().register(fluentButton());
 
   const sections = [
-    { id: "upload" as const, label: "Upload" },
-    { id: "manage" as const, label: "Manage" },
-    { id: "view" as const, label: "View" },
-  ];
+    { id: "upload", label: "Upload" },
+    { id: "manage", label: "Manage" },
+    { id: "view", label: "View" }
+  ] as const;
 
-  function setSection(section: "upload" | "manage" | "view") {
+  type SectionId = typeof sections[number]["id"];
+
+  function setSection(section: SectionId) {
     currentSection.set(section);
   }
 
-  function handleKeydown(event: KeyboardEvent, section: "upload" | "manage" | "view") {
+  function handleKeydown(event: KeyboardEvent, section: SectionId) {
     if (event.key === "Enter" || event.key === " ") {
       setSection(section);
     }
@@ -24,8 +26,6 @@
 <nav class="flex justify-around bg-card my-4">
   {#each sections as section}
     <fluent-button
-      role="tab"
-      tabindex="0"
       appearance={$currentSection === section.id ? "accent" : "lightweight"}
       on:click={() => setSection(section.id)}
       on:keydown={(e) => handleKeydown(e, section.id)}
