@@ -1,6 +1,5 @@
-// src/stores/checklistStore.ts
-import { writable } from "svelte/store";
-import { v4 as uuidv4 } from "uuid";
+import { writable } from 'svelte/store';
+import { v4 as uuidv4 } from 'uuid';
 
 export interface ChecklistItem {
   id: string;
@@ -34,26 +33,29 @@ function createChecklistStore() {
   return {
     subscribe,
     addTemplate: (name: string, items: ChecklistItem[]) =>
-      update((state) => ({
+      update((state: ChecklistState) => ({
         ...state,
         templates: [...state.templates, { id: uuidv4(), name, items }],
       })),
 
     removeTemplate: (id: string) =>
-      update((state) => ({
+      update((state: ChecklistState) => ({
         ...state,
         templates: state.templates.filter((t) => t.id !== id),
       })),
 
     startChecklist: (templateId: string) =>
-      update((state) => {
+      update((state: ChecklistState) => {
         const template = state.templates.find((t) => t.id === templateId);
         if (!template) return state;
 
         const newChecklist: ActiveChecklist = {
           id: uuidv4(),
           name: template.name,
-          items: template.items.map((item) => ({ ...item, id: uuidv4() })),
+          items: template.items.map((item) => ({
+            ...item,
+            id: uuidv4(),
+          })),
         };
 
         return {
@@ -63,7 +65,7 @@ function createChecklistStore() {
       }),
 
     updateActiveChecklist: (id: string, items: ChecklistItem[]) =>
-      update((state) => ({
+      update((state: ChecklistState) => ({
         ...state,
         activeChecklists: state.activeChecklists.map((cl) =>
           cl.id === id ? { ...cl, items } : cl,
@@ -71,13 +73,16 @@ function createChecklistStore() {
       })),
 
     removeActiveChecklist: (id: string) =>
-      update((state) => ({
+      update((state: ChecklistState) => ({
         ...state,
         activeChecklists: state.activeChecklists.filter((cl) => cl.id !== id),
       })),
 
     loadChecklists: (checklists: ChecklistTemplate[]) =>
-      update((state) => ({ ...state, templates: checklists })),
+      update((state: ChecklistState) => ({
+        ...state,
+        templates: checklists,
+      })),
   };
 }
 

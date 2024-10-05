@@ -1,10 +1,10 @@
 <script lang="ts">
-  import Header from "./lib/components/Header.svelte";
-  import Navigation from "./lib/components/Navigation.svelte";
-  import UploadSection from "./lib/components/UploadSection.svelte";
-  import ManageSection from "./lib/components/ManageSection.svelte";
-  import ViewSection from "./lib/components/ViewSection.svelte";
-  import { currentSection } from "./lib/stores/navigationStore";
+  import Header from "./components/Header.svelte";
+  import Navigation from "./components/Navigation.svelte";
+  import UploadSection from "./components/UploadSection.svelte";
+  import ManageSection from "./components/ManageSection.svelte";
+  import ViewSection from "./components/ViewSection.svelte";
+  import { currentSection } from "./stores/navigationStore";
 </script>
 
 <div class="container mx-auto px-4 py-8">

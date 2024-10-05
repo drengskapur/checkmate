@@ -1,21 +1,28 @@
 {
+  "extends": "@tsconfig/svelte/tsconfig.json",
   "compilerOptions": {
-    "pretty": true,
-    "moduleResolution": "node",
-    "noImplicitAny": true,
     "target": "ES2016",
     "module": "ES2020",
-    "lib": ["es5", "es6", "es7", "dom", "ES2021"],
-    "sourceMap": true,
-    "allowSyntheticDefaultImports": true,
-    "declaration": false,
-    "outDir": "dist",
-    "baseUrl": ".",
-    "resolveJsonModule": true,
+    "moduleResolution": "node",
+    "lib": ["ES2021", "DOM"],
+    "strict": true,
+    "noImplicitAny": true,
     "esModuleInterop": true,
-    "types": ["svelte", "chrome"],
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "removeComments": true,
+    "sourceMap": true,
+    "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "skipLibCheck": true
+    "baseUrl": ".",
+    "paths": {
+      "@components/*": ["src/components/*"],
+      "@stores/*": ["src/stores/*"],
+      "@utils/*": ["src/utils/*"],
+      "@assets/*": ["src/assets/*"]
+    },
+    "types": ["svelte", "chrome", "node", "vite/client"]
   },
-  "include": ["src/**/*.d.ts", "src/**/*.ts", "src/**/*.js", "src/**/*.svelte"]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
 }
