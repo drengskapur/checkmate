@@ -1,8 +1,6 @@
 <script lang="ts">
-  import '../app.css';
   import { onMount } from 'svelte';
   import { theme } from '$lib/stores/themeStore';
-  import { fade } from 'svelte/transition';
 
   onMount(() => {
     const savedTheme = localStorage.getItem('theme') || 'light';
@@ -18,6 +16,4 @@
   });
 </script>
 
-<div in:fade={{ duration: 150, delay: 150 }} out:fade={{ duration: 150 }}>
-  <slot />
-</div>
+<slot />

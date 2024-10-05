@@ -1,6 +1,15 @@
 <script lang="ts">
   import { checklistStore, type ActiveChecklist, type ChecklistItem } from '$lib/stores/checklistStore';
-  import { fade, fly } from 'svelte/transition';
+
+  // Import Fluent UI components
+  import { provideFluentDesignSystem, fluentButton, fluentCard, fluentCheckbox, fluentSelect, fluentOption } from '@fluentui/web-components';
+  provideFluentDesignSystem().register(
+    fluentButton(),
+    fluentCard(),
+    fluentCheckbox(),
+    fluentSelect(),
+    fluentOption()
+  );
 
   let selectedChecklist: string | null = null;
   let viewMode: 'list' | 'carousel' = 'list';
@@ -26,61 +35,45 @@
   }
 </script>
 
-<div class="card bg-base-200">
-  <div class="card-body">
-    <h2 class="card-title">View Active Checklist</h2>
-    {#if $checklistStore.activeChecklists.length === 0}
-      <p>No active checklists available to view.</p>
-    {:else}
-      <select class="select select-bordered w-full mb-4" bind:value={selectedChecklist}>
-        <option value={null}>Select a checklist</option>
-        {#each $checklistStore.activeChecklists as checklist}
-          <option value={checklist.id}>{checklist.name}</option>
-        {/each}
-      </select>
-      {#if currentChecklist}
-        <div class="btn-group mb-4">
-          <button class="btn" class:btn-active={viewMode === 'list'} on:click={() => viewMode = 'list'}>List</button>
-          <button class="btn" class:btn-active={viewMode === 'carousel'} on:click={() => viewMode = 'carousel'}>Carousel</button>
-        </div>
-        {#if viewMode === 'list'}
-          <ul class="menu bg-base-100 w-full rounded-box">
-            {#each currentChecklist.items as item}
-              <li>
-                <label class="label cursor-pointer">
-                  <input
-                    type="checkbox"
-                    class="checkbox"
-                    checked={item.checked}
-                    on:change={() => updateItem(currentChecklist, { ...item, checked: !item.checked })}
-                  />
-                  <span class="label-text">{item.text}</span>
-                </label>
-              </li>
-            {/each}
-          </ul>
-        {:else}
-          <div class="flex justify-between items-center">
-            <button class="btn" on:click={prevItem}>&lt;</button>
-            <div class="flex-1 text-center">
-              {#key currentItemIndex}
-                <div in:fly={{ x: 50, duration: 300 }} out:fly={{ x: -50, duration: 300 }}>
-                  <label class="label cursor-pointer">
-                    <input
-                      type="checkbox"
-                      class="checkbox mr-2"
-                      checked={currentChecklist.items[currentItemIndex].checked}
-                      on:change={() => updateItem(currentChecklist, { ...currentChecklist.items[currentItemIndex], checked: !currentChecklist.items[currentItemIndex].checked })}
-                    />
-                    <span class="label-text">{currentChecklist.items[currentItemIndex].text}</span>
-                  </label>
-                </div>
-              {/key}
-            </div>
-            <button class="btn" on:click={nextItem}>&gt;</button>
+<fluent-card>
+  <h2>View Active Checklist</h2>
+  {#if $checklistStore.activeChecklists.length === 0}
+    <p>No active checklists available to view.</p>
+  {:else}
+    <fluent-select style="width: 100%; margin-bottom: 1rem;" @change={(e) => selectedChecklist = e.target.value}>
+      <fluent-option value={null}>Select a checklist</fluent-option>
+      {#each $checklistStore.activeChecklists as checklist}
+        <fluent-option value={checklist.id}>{checklist.name}</fluent-option>
+      {/each}
+    </fluent-select>
+    {#if currentChecklist}
+      <div style="display: flex; justify-content: center; margin-bottom: 1rem;">
+        <fluent-button appearance={viewMode === 'list' ? 'accent' : 'lightweight'} @click={() => viewMode = 'list'}>List</fluent-button>
+        <fluent-button appearance={viewMode === 'carousel' ? 'accent' : 'lightweight'} @click={() => viewMode = 'carousel'}>Carousel</fluent-button>
+      </div>
+      {#if viewMode === 'list'}
+        {#each currentChecklist.items as item}
+          <div style="display: flex; align-items: center; margin-bottom: 0.5rem;">
+            <fluent-checkbox
+              checked={item.checked}
+              @change={() => updateItem(currentChecklist, { ...item, checked: !item.checked })}
+            >{item.text}</fluent-checkbox>
           </div>
-        {/if}
+        {/each}
+      {:else}
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <fluent-button @click={prevItem}>&lt;</fluent-button>
+          {#if currentChecklist.items.length > 0}
+            <fluent-checkbox
+              checked={currentChecklist.items[currentItemIndex].checked}
+              @change={() => updateItem(currentChecklist, { ...currentChecklist.items[currentItemIndex], checked: !currentChecklist.items[currentItemIndex].checked })}
+            >{currentChecklist.items[currentItemIndex].text}</fluent-checkbox>
+          {:else}
+            <p>No items to display.</p>
+          {/if}
+          <fluent-button @click={nextItem}>&gt;</fluent-button>
+        </div>
       {/if}
     {/if}
-  </div>
-</div>
+  {/if}
+</fluent-card>

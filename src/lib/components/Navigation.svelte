@@ -1,11 +1,15 @@
 <script lang="ts">
   import { currentSection } from '$lib/stores/navigationStore';
-  import { slide } from 'svelte/transition';
+
+  // Import Fluent UI components
+  import { provideFluentDesignSystem, fluentButton } from '@fluentui/web-components';
+
+  provideFluentDesignSystem().register(fluentButton());
 
   const sections = [
-    { id: 'upload', label: 'Upload', icon: 'upload' },
-    { id: 'manage', label: 'Manage', icon: 'list' },
-    { id: 'view', label: 'View', icon: 'eye' }
+    { id: 'upload', label: 'Upload' },
+    { id: 'manage', label: 'Manage' },
+    { id: 'view', label: 'View' },
   ];
 
   function setSection(section: 'upload' | 'manage' | 'view') {
@@ -13,21 +17,13 @@
   }
 </script>
 
-<nav class="flex justify-around mb-4">
+<div style="display: flex; justify-content: space-around; margin-bottom: 1rem;">
   {#each sections as section}
-    <button
-      class="btn btn-primary"
-      class:btn-active={$currentSection === section.id}
-      on:click={() => setSection(section.id)}
+    <fluent-button
+      appearance={$currentSection === section.id ? 'accent' : 'lightweight'}
+      @click={() => setSection(section.id)}
     >
-      <i class="fas fa-{section.icon} mr-2"></i>
-      {#if $currentSection === section.id}
-        <span transition:slide|local>
-          {section.label}
-        </span>
-      {:else}
-        <span class="sr-only">{section.label}</span>
-      {/if}
-    </button>
+      {section.label}
+    </fluent-button>
   {/each}
-</nav>
+</div>

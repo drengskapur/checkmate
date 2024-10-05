@@ -5,22 +5,17 @@
   import ManageSection from '$lib/components/ManageSection.svelte';
   import ViewSection from '$lib/components/ViewSection.svelte';
   import { currentSection } from '$lib/stores/navigationStore';
-  import { fade } from 'svelte/transition';
 </script>
 
-<div class="container mx-auto p-4 max-w-xl">
+<div style="max-width: 800px; margin: 0 auto; padding: 1rem;">
   <Header />
   <Navigation />
 
-  {#key $currentSection}
-    <div in:fade={{ duration: 150, delay: 150 }} out:fade={{ duration: 150 }}>
-      {#if $currentSection === 'upload'}
-        <UploadSection />
-      {:else if $currentSection === 'manage'}
-        <ManageSection />
-      {:else if $currentSection === 'view'}
-        <ViewSection />
-      {/if}
-    </div>
-  {/key}
+  {#if $currentSection === 'upload'}
+    <UploadSection />
+  {:else if $currentSection === 'manage'}
+    <ManageSection />
+  {:else if $currentSection === 'view'}
+    <ViewSection />
+  {/if}
 </div>

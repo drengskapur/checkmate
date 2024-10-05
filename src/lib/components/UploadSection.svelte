@@ -2,10 +2,18 @@
   import { checklistStore } from '$lib/stores/checklistStore';
   import { parseMarkdown } from '$lib/utils/markdown';
   import { createEventDispatcher } from 'svelte';
-  import { fade, fly } from 'svelte/transition';
+  import { onMount } from 'svelte';
+
+  // Import Fluent UI components
+  import { provideFluentDesignSystem, fluentButton, fluentCard, fluentTextField } from '@fluentui/web-components';
+  provideFluentDesignSystem().register(
+    fluentButton(),
+    fluentCard(),
+    fluentTextField()
+  );
 
   const dispatch = createEventDispatcher();
-  let files: FileList;
+  let files: FileList | null = null;
   let dragOver = false;
   let uploadSuccess = false;
 
@@ -34,34 +42,28 @@
   }
 </script>
 
-<div
-  class="card bg-base-200 p-6"
-  on:dragenter={() => dragOver = true}
-  on:dragleave={() => dragOver = false}
-  on:dragover|preventDefault
-  on:drop|preventDefault={handleDrop}
+<fluent-card
+  @dragenter={() => dragOver = true}
+  @dragleave={() => dragOver = false}
+  @dragover|preventDefault
+  @drop|preventDefault={handleDrop}
+  style="padding: 2rem; text-align: center;"
 >
-  <h2 class="card-title mb-4">Upload Checklist Templates</h2>
-  <div
-    class="border-4 border-dashed border-primary rounded-lg p-8 text-center transition-colors"
-    class:bg-primary={dragOver}
-    class:bg-opacity-10={dragOver}
-  >
-    <p class="mb-4">Drag & drop Markdown files here or</p>
-    <input
-      type="file"
-      id="file-input"
-      accept=".md,text/markdown"
-      bind:files
-      on:change={() => files && handleFileUpload(files)}
-      class="hidden"
-      multiple
-    />
-    <label for="file-input" class="btn btn-primary">Choose Files</label>
-  </div>
+  <h2>Upload Checklist Templates</h2>
+  <p>Drag & drop Markdown files here or</p>
+  <input
+    type="file"
+    id="file-input"
+    accept=".md,text/markdown"
+    multiple
+    bind:files
+    style="display: none;"
+    on:change={() => files && handleFileUpload(files)}
+  />
+  <label for="file-input">
+    <fluent-button appearance="accent">Choose Files</fluent-button>
+  </label>
   {#if uploadSuccess}
-    <div in:fly={{ y: 20, duration: 300 }} out:fade class="mt-4 text-center text-success">
-      Upload successful!
-    </div>
+    <p style="color: green;">Upload successful!</p>
   {/if}
-</div>
+</fluent-card>
