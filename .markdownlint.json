@@ -1,6 +1,14 @@
 {
-  "MD033": {
-    "allowed_elements": ["img", "p"]
-  },
-  "MD013": false
+  "rules": {
+    "MD033": {
+      "allowed_elements": [
+        "img",
+        "p"
+      ]
+    },
+    "MD013": {
+      "line_length": 120
+    },
+    "MD041": false
+  }
 }
