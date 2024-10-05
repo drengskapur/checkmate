@@ -31,16 +31,20 @@
           <fluent-button
             appearance="accent"
             on:click={() => startChecklist(template.id)}
-            on:keydown={(e: KeyboardEvent) => handleKeydown(e, () => startChecklist(template.id))}
+            on:keydown={(e) => handleKeydown(e, () => startChecklist(template.id))}
             role="button"
             tabindex="0"
-          >Start</fluent-button>
+          >
+            Start
+          </fluent-button>
           <fluent-button
             on:click={() => deleteTemplate(template.id)}
-            on:keydown={(e: KeyboardEvent) => handleKeydown(e, () => deleteTemplate(template.id))}
+            on:keydown={(e) => handleKeydown(e, () => deleteTemplate(template.id))}
             role="button"
             tabindex="0"
-          >Delete</fluent-button>
+          >
+            Delete
+          </fluent-button>
         </div>
       </div>
     {/each}
@@ -57,10 +61,12 @@
         <span>{checklist.name}</span>
         <fluent-button
           on:click={() => checklistStore.removeActiveChecklist(checklist.id)}
-          on:keydown={(e: KeyboardEvent) => handleKeydown(e, () => checklistStore.removeActiveChecklist(checklist.id))}
+          on:keydown={(e) => handleKeydown(e, () => checklistStore.removeActiveChecklist(checklist.id))}
           role="button"
           tabindex="0"
-        >Remove</fluent-button>
+        >
+          Remove
+        </fluent-button>
       </div>
     {/each}
   {/if}

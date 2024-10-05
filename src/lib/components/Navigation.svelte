@@ -26,7 +26,7 @@
     <fluent-button
       appearance={$currentSection === section.id ? 'accent' : 'lightweight'}
       on:click={() => setSection(section.id)}
-      on:keydown={(e: KeyboardEvent) => handleKeydown(e, section.id)}
+      on:keydown={(e) => handleKeydown(e, section.id)}
       role="tab"
       tabindex="0"
       aria-selected={$currentSection === section.id}

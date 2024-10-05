@@ -24,7 +24,9 @@
   }
 
   function updateItem(checklist: ActiveChecklist, item: ChecklistItem) {
-    const updatedItems = checklist.items.map((i: ChecklistItem) => i.id === item.id ? {...item, checked: !item.checked} : i);
+    const updatedItems = checklist.items.map((i: ChecklistItem) =>
+      i.id === item.id ? { ...i, checked: !i.checked } : i
+    );
     checklistStore.updateActiveChecklist(checklist.id, updatedItems);
   }
 
@@ -55,17 +57,21 @@
       <div class="flex justify-center mb-4">
         <fluent-button
           appearance={viewMode === 'list' ? 'accent' : 'lightweight'}
-          on:click={() => viewMode = 'list'}
-          on:keydown={(e: KeyboardEvent) => handleKeydown(e, () => viewMode = 'list')}
+          on:click={() => (viewMode = 'list')}
+          on:keydown={(e) => handleKeydown(e, () => (viewMode = 'list'))}
           tabindex="0"
-        >List</fluent-button>
+        >
+          List
+        </fluent-button>
         <fluent-button
           appearance={viewMode === 'carousel' ? 'accent' : 'lightweight'}
-          on:click={() => viewMode = 'carousel'}
-          on:keydown={(e: KeyboardEvent) => handleKeydown(e, () => viewMode = 'carousel')}
+          on:click={() => (viewMode = 'carousel')}
+          on:keydown={(e) => handleKeydown(e, () => (viewMode = 'carousel'))}
           role="button"
           tabindex="0"
-        >Carousel</fluent-button>
+        >
+          Carousel
+        </fluent-button>
       </div>
       {#if viewMode === 'list'}
         {#each currentChecklist.items as item}
@@ -73,31 +79,41 @@
             <fluent-checkbox
               checked={item.checked}
               on:change={() => updateItem(currentChecklist, item)}
-            >{@html renderTodoText(item.text)}</fluent-checkbox>
+            >
+              {@html renderTodoText(item.text)}
+            </fluent-checkbox>
           </div>
         {/each}
       {:else}
         <div class="flex justify-between items-center">
           <fluent-button
             on:click={prevItem}
-            on:keydown={(e: KeyboardEvent) => handleKeydown(e, prevItem)}
+            on:keydown={(e) => handleKeydown(e, prevItem)}
             role="button"
             tabindex="0"
-          >&lt;</fluent-button>
+          >
+            &lt;
+          </fluent-button>
           {#if currentChecklist.items.length > 0}
             <fluent-checkbox
               checked={currentChecklist.items[currentItemIndex].checked}
-              on:change={() => updateItem(currentChecklist, currentChecklist.items[currentItemIndex])}
-            >{@html renderTodoText(currentChecklist.items[currentItemIndex].text)}</fluent-checkbox>
+              on:change={() =>
+                updateItem(currentChecklist, currentChecklist.items[currentItemIndex])
+              }
+            >
+              {@html renderTodoText(currentChecklist.items[currentItemIndex].text)}
+            </fluent-checkbox>
           {:else}
             <p>No items to display.</p>
           {/if}
           <fluent-button
             on:click={nextItem}
-            on:keydown={(e: KeyboardEvent) => handleKeydown(e, nextItem)}
+            on:keydown={(e) => handleKeydown(e, nextItem)}
             role="button"
             tabindex="0"
-          >&gt;</fluent-button>
+          >
+            &gt;
+          </fluent-button>
         </div>
       {/if}
     {/if}
