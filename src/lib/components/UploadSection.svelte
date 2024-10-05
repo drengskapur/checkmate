@@ -1,18 +1,10 @@
 <script lang="ts">
   import { checklistStore } from '$lib/stores/checklistStore';
   import { parseMarkdown } from '$lib/utils/markdown';
-  import { createEventDispatcher } from 'svelte';
-  import { onMount } from 'svelte';
+  import { provideFluentDesignSystem, fluentButton, fluentCard } from '@fluentui/web-components';
 
-  // Import Fluent UI components
-  import { provideFluentDesignSystem, fluentButton, fluentCard, fluentTextField } from '@fluentui/web-components';
-  provideFluentDesignSystem().register(
-    fluentButton(),
-    fluentCard(),
-    fluentTextField()
-  );
+  provideFluentDesignSystem().register(fluentButton(), fluentCard());
 
-  const dispatch = createEventDispatcher();
   let files: FileList | null = null;
   let dragOver = false;
   let uploadSuccess = false;
@@ -20,7 +12,7 @@
   async function handleFileUpload(uploadedFiles: FileList) {
     for (let file of uploadedFiles) {
       if (file.type !== 'text/markdown' && !file.name.endsWith('.md')) {
-        dispatch('error', { message: `${file.name} is not a Markdown file.` });
+        console.warn(`${file.name} is not a Markdown file.`);
         continue;
       }
       const text = await file.text();
@@ -30,7 +22,6 @@
     files = null;
     uploadSuccess = true;
     setTimeout(() => uploadSuccess = false, 3000);
-    dispatch('upload');
   }
 
   function handleDrop(event: DragEvent) {
@@ -43,27 +34,34 @@
 </script>
 
 <fluent-card
-  @dragenter={() => dragOver = true}
-  @dragleave={() => dragOver = false}
-  @dragover|preventDefault
-  @drop|preventDefault={handleDrop}
-  style="padding: 2rem; text-align: center;"
+  class="p-8 text-center"
+  class:dragover={dragOver}
+  on:dragenter={() => dragOver = true}
+  on:dragleave={() => dragOver = false}
+  on:dragover|preventDefault
+  on:drop|preventDefault={handleDrop}
 >
-  <h2>Upload Checklist Templates</h2>
-  <p>Drag & drop Markdown files here or</p>
+  <h2 class="text-2xl mb-4">Upload Checklist Templates</h2>
+  <p class="mb-4">Drag & drop Markdown files here or</p>
   <input
     type="file"
     id="file-input"
     accept=".md,text/markdown"
     multiple
     bind:files
-    style="display: none;"
     on:change={() => files && handleFileUpload(files)}
+    class="hidden"
   />
   <label for="file-input">
     <fluent-button appearance="accent">Choose Files</fluent-button>
   </label>
   {#if uploadSuccess}
-    <p style="color: green;">Upload successful!</p>
+    <p class="text-green-500 mt-4">Upload successful!</p>
   {/if}
 </fluent-card>
+
+<style>
+  .dragover {
+    @apply border-2 border-dashed border-primary;
+  }
+</style>

@@ -7,7 +7,7 @@
   import { currentSection } from '$lib/stores/navigationStore';
 </script>
 
-<div style="max-width: 800px; margin: 0 auto; padding: 1rem;">
+<div class="container mx-auto px-4 py-8">
   <Header />
   <Navigation />
 

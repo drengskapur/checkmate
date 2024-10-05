@@ -1,7 +1,5 @@
 <script lang="ts">
   import { currentSection } from '$lib/stores/navigationStore';
-
-  // Import Fluent UI components
   import { provideFluentDesignSystem, fluentButton } from '@fluentui/web-components';
 
   provideFluentDesignSystem().register(fluentButton());
@@ -17,13 +15,13 @@
   }
 </script>
 
-<div style="display: flex; justify-content: space-around; margin-bottom: 1rem;">
+<nav class="flex justify-around bg-card my-4">
   {#each sections as section}
     <fluent-button
-      appearance={$currentSection === section.id ? 'accent' : 'lightweight'}
-      @click={() => setSection(section.id)}
+      appearance={ === section.id ? 'accent' : 'lightweight'}
+      on:click={() => setSection(section.id)}
     >
       {section.label}
     </fluent-button>
   {/each}
-</div>
+</nav>

@@ -1,15 +1,9 @@
 <script lang="ts">
   import { checklistStore, type ActiveChecklist, type ChecklistItem } from '$lib/stores/checklistStore';
-
-  // Import Fluent UI components
+  import { renderTodoText } from '$lib/utils/markdown';
   import { provideFluentDesignSystem, fluentButton, fluentCard, fluentCheckbox, fluentSelect, fluentOption } from '@fluentui/web-components';
-  provideFluentDesignSystem().register(
-    fluentButton(),
-    fluentCard(),
-    fluentCheckbox(),
-    fluentSelect(),
-    fluentOption()
-  );
+
+  provideFluentDesignSystem().register(fluentButton(), fluentCard(), fluentCheckbox(), fluentSelect(), fluentOption());
 
   let selectedChecklist: string | null = null;
   let viewMode: 'list' | 'carousel' = 'list';
@@ -30,48 +24,48 @@
   }
 
   function updateItem(checklist: ActiveChecklist, item: ChecklistItem) {
-    const updatedItems = checklist.items.map(i => i.id === item.id ? item : i);
+    const updatedItems = checklist.items.map(i => i.id === item.id ? {...item, checked: !item.checked} : i);
     checklistStore.updateActiveChecklist(checklist.id, updatedItems);
   }
 </script>
 
-<fluent-card>
-  <h2>View Active Checklist</h2>
+<fluent-card class="p-4">
+  <h2 class="text-2xl mb-4">View Active Checklist</h2>
   {#if $checklistStore.activeChecklists.length === 0}
     <p>No active checklists available to view.</p>
   {:else}
-    <fluent-select style="width: 100%; margin-bottom: 1rem;" @change={(e) => selectedChecklist = e.target.value}>
+    <fluent-select class="w-full mb-4" on:change={(e) => selectedChecklist = e.target.value}>
       <fluent-option value={null}>Select a checklist</fluent-option>
       {#each $checklistStore.activeChecklists as checklist}
         <fluent-option value={checklist.id}>{checklist.name}</fluent-option>
       {/each}
     </fluent-select>
     {#if currentChecklist}
-      <div style="display: flex; justify-content: center; margin-bottom: 1rem;">
-        <fluent-button appearance={viewMode === 'list' ? 'accent' : 'lightweight'} @click={() => viewMode = 'list'}>List</fluent-button>
-        <fluent-button appearance={viewMode === 'carousel' ? 'accent' : 'lightweight'} @click={() => viewMode = 'carousel'}>Carousel</fluent-button>
+      <div class="flex justify-center mb-4">
+        <fluent-button appearance={viewMode === 'list' ? 'accent' : 'lightweight'} on:click={() => viewMode = 'list'}>List</fluent-button>
+        <fluent-button appearance={viewMode === 'carousel' ? 'accent' : 'lightweight'} on:click={() => viewMode = 'carousel'}>Carousel</fluent-button>
       </div>
       {#if viewMode === 'list'}
         {#each currentChecklist.items as item}
-          <div style="display: flex; align-items: center; margin-bottom: 0.5rem;">
+          <div class="mb-2">
             <fluent-checkbox
               checked={item.checked}
-              @change={() => updateItem(currentChecklist, { ...item, checked: !item.checked })}
-            >{item.text}</fluent-checkbox>
+              on:change={() => updateItem(currentChecklist, item)}
+            >{@html renderTodoText(item.text)}</fluent-checkbox>
           </div>
         {/each}
       {:else}
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <fluent-button @click={prevItem}>&lt;</fluent-button>
+        <div class="flex justify-between items-center">
+          <fluent-button on:click={prevItem}>&lt;</fluent-button>
           {#if currentChecklist.items.length > 0}
             <fluent-checkbox
               checked={currentChecklist.items[currentItemIndex].checked}
-              @change={() => updateItem(currentChecklist, { ...currentChecklist.items[currentItemIndex], checked: !currentChecklist.items[currentItemIndex].checked })}
-            >{currentChecklist.items[currentItemIndex].text}</fluent-checkbox>
+              on:change={() => updateItem(currentChecklist, currentChecklist.items[currentItemIndex])}
+            >{@html renderTodoText(currentChecklist.items[currentItemIndex].text)}</fluent-checkbox>
           {:else}
             <p>No items to display.</p>
           {/if}
-          <fluent-button @click={nextItem}>&gt;</fluent-button>
+          <fluent-button on:click={nextItem}>&gt;</fluent-button>
         </div>
       {/if}
     {/if}
