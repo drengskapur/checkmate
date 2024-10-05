@@ -1,6 +1,9 @@
-/** @type {import("tailwindcss").Config} */
+/** @type {import('tailwindcss').Config} */
 export default {
-  content: ['./index.html', './src/**/*.{html,js,svelte,ts}'],
+  content: [
+    './index.html', 
+    './src/**/*.{html,js,svelte,ts}' 
+  ],
   theme: {
     extend: {
       colors: {
@@ -8,9 +11,9 @@ export default {
         background: 'var(--background-color)',
         text: 'var(--text-color)',
         card: 'var(--card-background)',
-        border: 'var(--border-color)'
-      }
-    }
+        border: 'var(--border-color)',
+      },
+    },
   },
-  plugins: []
+  plugins: [],
 }
