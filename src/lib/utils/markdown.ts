@@ -1,6 +1,6 @@
 import { marked } from "marked";
 import type { Tokens } from "marked";
-import * as DOMPurify from "dompurify";
+import DOMPurify from 'dompurify';
 import { v4 as uuidv4 } from "uuid";
 
 interface ChecklistItem {
@@ -20,8 +20,9 @@ export function parseMarkdown(content: string): ChecklistItem[] {
     } else if (token.type === "list_end") {
       inList = false;
     } else if (inList && token.type === "list_item") {
-      const checked = token.task && token.checked;
-      const text = token.text.replace(/^\[[ x]\]\s*/, "").trim();
+      const listItem = token as Tokens.ListItem;
+      const checked = listItem.task && listItem.checked;
+      const text = listItem.text.replace(/^\[[ x]\]\s*/, "").trim();
       checklistItems.push({
         id: uuidv4(),
         text: DOMPurify.sanitize(text),
@@ -50,5 +51,5 @@ export function renderTodoText(text: string): string {
     return `<img src="${safeSrc}" alt="${safeAlt}"${safeTitle} style="max-width: 100%; height: auto;">`;
   };
 
-  return DOMPurify.sanitize(marked(text, { renderer }));
+  return DOMPurify.sanitize(marked.parse(text, { renderer }));
 }

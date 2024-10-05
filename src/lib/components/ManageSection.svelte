@@ -13,7 +13,7 @@
   }
 
   // Improved keydown handler 
-  function handleKeydown(e, action: () => void) {
+  function handleKeydown(e: KeyboardEvent, action: () => void) {
     if (e.code === 'Enter' || e.code === 'Space') {
       e.preventDefault();
       action();
@@ -31,16 +31,16 @@
         <li class="flex justify-between items-center mb-2"> 
           <span>{template.name}</span>
           <div>
+            <!-- svelte-ignore a11y-no-static-element-interactions -->
             <fluent-button
               appearance="accent"
-              tabindex="0"
               on:click={() => startChecklist(template.id)}
               on:keydown={(e) => handleKeydown(e, () => startChecklist(template.id))}
             >
               Start
             </fluent-button>
+            <!-- svelte-ignore a11y-no-static-element-interactions -->
             <fluent-button
-              role="button"
               on:click={() => deleteTemplate(template.id)}
               on:keydown={(e) => handleKeydown(e, () => deleteTemplate(template.id))}
             >
@@ -62,9 +62,10 @@
       {#each $checklistStore.activeChecklists as checklist}
         <li class="flex justify-between items-center mb-2">
           <span>{checklist.name}</span>
+          <!-- svelte-ignore a11y-interactive-supports-focus -->
           <fluent-button
+            on:keydown={(e) => handleKeydown(e, () => checklistStore.removeActiveChecklist(checklist.id))}
             role="button"
-            tabindex="0"
             on:click={() => checklistStore.removeActiveChecklist(checklist.id)}
             on:keydown={(e) => handleKeydown(e, () => checklistStore.removeActiveChecklist(checklist.id))}
           >
