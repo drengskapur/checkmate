@@ -18,14 +18,17 @@
 
   function handleKeydown(event: KeyboardEvent, section: SectionId) {
     if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
       setSection(section);
     }
   }
 </script>
 
-<nav class="flex justify-around bg-card my-4">
+<div class="flex justify-around bg-card my-4" role="tablist">
   {#each sections as section}
     <fluent-button
+      role="tab"
+      tabindex="0"
       appearance={$currentSection === section.id ? "accent" : "lightweight"}
       on:click={() => setSection(section.id)}
       on:keydown={(e) => handleKeydown(e, section.id)}
@@ -34,4 +37,4 @@
       {section.label}
     </fluent-button>
   {/each}
-</nav>
+</div>

@@ -7,7 +7,7 @@ export default {
         primary: "var(--primary-color)",
         background: "var(--background-color)",
         text: "var(--text-color)",
-        card: "var(---card-background)",
+        card: "var(--card-background)",
         border: "var(--border-color)"
       }
     }

@@ -12,9 +12,9 @@
     checklistStore.startChecklist(templateId);
   }
 
-  function handleKeydown(e: KeyboardEvent, action: () => void) {
-    if (e.code === 'Enter' || e.code === 'Space') {
-      e.preventDefault();
+  function handleKeydown(event: KeyboardEvent, action: () => void) {
+    if (event.code === "Enter" || event.code === "Space") {
+      event.preventDefault();
       action();
     }
   }
@@ -31,6 +31,8 @@
           <span>{template.name}</span>
           <div>
             <fluent-button
+              role="button"
+              tabindex="0"
               appearance="accent"
               on:click={() => startChecklist(template.id)}
               on:keydown={(e) => handleKeydown(e, () => startChecklist(template.id))}
@@ -38,6 +40,8 @@
               Start
             </fluent-button>
             <fluent-button
+              role="button"
+              tabindex="0"
               on:click={() => deleteTemplate(template.id)}
               on:keydown={(e) => handleKeydown(e, () => deleteTemplate(template.id))}
             >
@@ -60,6 +64,8 @@
         <li class="flex justify-between items-center mb-2">
           <span>{checklist.name}</span>
           <fluent-button
+            role="button"
+            tabindex="0"
             on:click={() => checklistStore.removeActiveChecklist(checklist.id)}
             on:keydown={(e) => handleKeydown(e, () => checklistStore.removeActiveChecklist(checklist.id))}
           >
