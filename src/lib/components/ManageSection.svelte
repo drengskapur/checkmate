@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { checklistStore } from '$lib/stores/checklistStore';
-  import { provideFluentDesignSystem, fluentButton, fluentCard } from '@fluentui/web-components';
+  import { checklistStore } from "$lib/stores/checklistStore";
+  import { provideFluentDesignSystem, fluentButton, fluentCard } from "@fluentui/web-components";
 
   provideFluentDesignSystem().register(fluentButton(), fluentCard());
 
@@ -13,7 +13,7 @@
   }
 
   function handleKeydown(event: KeyboardEvent, action: () => void) {
-    if (event.key === 'Enter' || event.key === ' ') {
+    if (event.key === "Enter" || event.key === " ") {
       action();
     }
   }
@@ -57,14 +57,14 @@
     <p>No active checklists.</p>
   {:else}
     {#each $checklistStore.activeChecklists as checklist}
-        <fluent-button
-          role="button"
-          tabindex="0"
-          on:click={() => checklistStore.removeActiveChecklist(checklist.id)}
-          on:keydown={(e: KeyboardEvent) => handleKeydown(e, () => checklistStore.removeActiveChecklist(checklist.id))}
-        >
+      <fluent-button
+        role="button"
+        tabindex="0"
+        on:click={() => checklistStore.removeActiveChecklist(checklist.id)}
+        on:keydown={(e) => handleKeydown(e, () => checklistStore.removeActiveChecklist(checklist.id))}
+      >
         Remove
-        </fluent-button>
+      </fluent-button>
     {/each}
   {/if}
 </fluent-card>

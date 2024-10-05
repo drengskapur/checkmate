@@ -6,7 +6,10 @@
   "action": {
     "default_popup": "index.html"
   },
-  "permissions": ["storage", "activeTab"],
+  "permissions": [
+    "storage",
+    "activeTab"
+  ],
   "icons": {
     "16": "images/logo-icon.svg",
     "48": "images/logo-icon.svg",

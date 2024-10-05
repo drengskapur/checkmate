@@ -1,10 +1,22 @@
-import { sveltekit } from "@sveltejs/kit/vite";
-import { defineConfig } from "vite";
+import { defineConfig } from 'vite';
+import { svelte } from '@sveltejs/vite-plugin-svelte';
+import { crx } from 'vite-plugin-chrome-extension';
+
+import manifest from './manifest.json';
 
 export default defineConfig({
-  plugins: [sveltekit()],
+  plugins: [svelte(), crx({ manifest })],
   build: {
-    target: "esnext",
-    outDir: "dist",
+    rollupOptions: {
+      input: {
+        main: 'src/main.ts',
+        background: 'src/background.ts',
+      },
+      output: {
+        entryFileNames: '[name].js',
+        chunkFileNames: '[name].js',
+        assetFileNames: '[name].[ext]',
+      },
+    },
   },
 });

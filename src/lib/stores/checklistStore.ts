@@ -19,11 +19,13 @@ export interface ChecklistTemplate {
   items: ChecklistItem[];
 }
 
+interface ChecklistState {
+  templates: ChecklistTemplate[];
+  activeChecklists: ActiveChecklist[];
+}
+
 function createChecklistStore() {
-  const { subscribe, set, update } = writable<{
-    templates: ChecklistTemplate[];
-    activeChecklists: ActiveChecklist[];
-  }>({
+  const { subscribe, update } = writable<ChecklistState>({
     templates: [],
     activeChecklists: [],
   });
@@ -31,53 +33,50 @@ function createChecklistStore() {
   return {
     subscribe,
     addTemplate: (name: string, items: ChecklistItem[]) =>
-      update((state) => {
-        const newTemplate: ChecklistTemplate = {
-          id: uuidv4(),
-          name,
-          items,
-        };
-        return { ...state, templates: [...state.templates, newTemplate] };
-      }),
+      update(state => ({
+        ...state,
+        templates: [...state.templates, { id: uuidv4(), name, items }],
+      })),
+
     removeTemplate: (id: string) =>
-      update((state) => {
-        const templates = state.templates.filter((t) => t.id !== id);
-        return { ...state, templates };
-      }),
+      update(state => ({
+        ...state,
+        templates: state.templates.filter(t => t.id !== id),
+      })),
+
     startChecklist: (templateId: string) =>
-      update((state) => {
-        const template = state.templates.find((t) => t.id === templateId);
-        if (template) {
-          const newChecklist: ActiveChecklist = {
-            id: uuidv4(),
-            name: template.name,
-            items: template.items.map((item) => ({ ...item, id: uuidv4() })),
-          };
-          return {
-            ...state,
-            activeChecklists: [newChecklist, ...state.activeChecklists],
-          };
-        }
-        return state;
+      update(state => {
+        const template = state.templates.find(t => t.id === templateId);
+        if (!template) return state;
+
+        const newChecklist: ActiveChecklist = {
+          id: uuidv4(),
+          name: template.name,
+          items: template.items.map(item => ({ ...item, id: uuidv4() })),
+        };
+
+        return {
+          ...state,
+          activeChecklists: [newChecklist, ...state.activeChecklists],
+        };
       }),
+
     updateActiveChecklist: (id: string, items: ChecklistItem[]) =>
-      update((state) => {
-        const activeChecklists = state.activeChecklists.map((cl) =>
-          cl.id === id ? { ...cl, items } : cl,
-        );
-        return { ...state, activeChecklists };
-      }),
+      update(state => ({
+        ...state,
+        activeChecklists: state.activeChecklists.map(cl =>
+          cl.id === id ? { ...cl, items } : cl
+        ),
+      })),
+
     removeActiveChecklist: (id: string) =>
-      update((state) => {
-        const activeChecklists = state.activeChecklists.filter(
-          (cl) => cl.id !== id,
-        );
-        return { ...state, activeChecklists };
-      }),
+      update(state => ({
+        ...state,
+        activeChecklists: state.activeChecklists.filter(cl => cl.id !== id),
+      })),
+
     loadChecklists: (checklists: ChecklistTemplate[]) =>
-      update((state) => {
-        return { ...state, templates: checklists };
-      }),
+      update(state => ({ ...state, templates: checklists })),
   };
 }
 
