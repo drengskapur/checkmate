@@ -29,19 +29,19 @@
         <span>{template.name}</span>
         <div>
           <fluent-button
+            role="button"
+            tabindex="0"
             appearance="accent"
             on:click={() => startChecklist(template.id)}
             on:keydown={(e) => handleKeydown(e, () => startChecklist(template.id))}
-            role="button"
-            tabindex="0"
           >
             Start
           </fluent-button>
           <fluent-button
-            on:click={() => deleteTemplate(template.id)}
-            on:keydown={(e) => handleKeydown(e, () => deleteTemplate(template.id))}
             role="button"
             tabindex="0"
+            on:click={() => deleteTemplate(template.id)}
+            on:keydown={(e) => handleKeydown(e, () => deleteTemplate(template.id))}
           >
             Delete
           </fluent-button>
@@ -57,17 +57,14 @@
     <p>No active checklists.</p>
   {:else}
     {#each $checklistStore.activeChecklists as checklist}
-      <div class="flex justify-between items-center mb-2">
-        <span>{checklist.name}</span>
         <fluent-button
-          on:click={() => checklistStore.removeActiveChecklist(checklist.id)}
-          on:keydown={(e) => handleKeydown(e, () => checklistStore.removeActiveChecklist(checklist.id))}
           role="button"
           tabindex="0"
+          on:click={() => checklistStore.removeActiveChecklist(checklist.id)}
+          on:keydown={(e: KeyboardEvent) => handleKeydown(e, () => checklistStore.removeActiveChecklist(checklist.id))}
         >
-          Remove
+        Remove
         </fluent-button>
-      </div>
     {/each}
   {/if}
 </fluent-card>

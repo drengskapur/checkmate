@@ -1,15 +1,32 @@
 <script lang="ts">
-  import { checklistStore, type ActiveChecklist, type ChecklistItem } from '$lib/stores/checklistStore';
+  import { checklistStore } from '$lib/stores/checklistStore';
+  import type { ChecklistItem } from '$lib/stores/checklistStore';
+  import type { ActiveChecklist } from '$lib/stores/checklistStore';
   import { renderTodoText } from '$lib/utils/markdown';
-  import { provideFluentDesignSystem, fluentButton, fluentCard, fluentCheckbox, fluentSelect, fluentOption } from '@fluentui/web-components';
+  import {
+    provideFluentDesignSystem,
+    fluentButton,
+    fluentCard,
+    fluentCheckbox,
+    fluentSelect,
+    fluentOption
+  } from '@fluentui/web-components';
 
-  provideFluentDesignSystem().register(fluentButton(), fluentCard(), fluentCheckbox(), fluentSelect(), fluentOption());
+  provideFluentDesignSystem().register(
+    fluentButton(),
+    fluentCard(),
+    fluentCheckbox(),
+    fluentSelect(),
+    fluentOption()
+  );
 
   let selectedChecklist: string | null = null;
   let viewMode: 'list' | 'carousel' = 'list';
   let currentItemIndex = 0;
 
-  $: currentChecklist = $checklistStore.activeChecklists.find((cl: ActiveChecklist) => cl.id === selectedChecklist);
+  $: currentChecklist = $checklistStore.activeChecklists.find(
+    (cl: ActiveChecklist) => cl.id === selectedChecklist
+  );
 
   function nextItem() {
     if (currentChecklist) {
@@ -19,12 +36,13 @@
 
   function prevItem() {
     if (currentChecklist) {
-      currentItemIndex = (currentItemIndex - 1 + currentChecklist.items.length) % currentChecklist.items.length;
+      currentItemIndex =
+        (currentItemIndex - 1 + currentChecklist.items.length) % currentChecklist.items.length;
     }
   }
 
   function updateItem(checklist: ActiveChecklist, item: ChecklistItem) {
-    const updatedItems = checklist.items.map((i: ChecklistItem) =>
+    const updatedItems = checklist.items.map((i: { id: any; checked: any; }) =>
       i.id === item.id ? { ...i, checked: !i.checked } : i
     );
     checklistStore.updateActiveChecklist(checklist.id, updatedItems);
@@ -56,19 +74,20 @@
     {#if currentChecklist}
       <div class="flex justify-center mb-4">
         <fluent-button
+          role="button"
+          tabindex="0"
           appearance={viewMode === 'list' ? 'accent' : 'lightweight'}
           on:click={() => (viewMode = 'list')}
           on:keydown={(e) => handleKeydown(e, () => (viewMode = 'list'))}
-          tabindex="0"
         >
           List
         </fluent-button>
         <fluent-button
+          role="button"
+          tabindex="0"
           appearance={viewMode === 'carousel' ? 'accent' : 'lightweight'}
           on:click={() => (viewMode = 'carousel')}
           on:keydown={(e) => handleKeydown(e, () => (viewMode = 'carousel'))}
-          role="button"
-          tabindex="0"
         >
           Carousel
         </fluent-button>
@@ -87,10 +106,10 @@
       {:else}
         <div class="flex justify-between items-center">
           <fluent-button
-            on:click={prevItem}
-            on:keydown={(e) => handleKeydown(e, prevItem)}
             role="button"
             tabindex="0"
+            on:click={prevItem}
+            on:keydown={(e) => handleKeydown(e, prevItem)}
           >
             &lt;
           </fluent-button>
@@ -107,10 +126,10 @@
             <p>No items to display.</p>
           {/if}
           <fluent-button
-            on:click={nextItem}
-            on:keydown={(e) => handleKeydown(e, nextItem)}
             role="button"
             tabindex="0"
+            on:click={nextItem}
+            on:keydown={(e) => handleKeydown(e, nextItem)}
           >
             &gt;
           </fluent-button>

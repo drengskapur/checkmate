@@ -21,7 +21,7 @@
     }
     files = null;
     uploadSuccess = true;
-    setTimeout(() => uploadSuccess = false, 3000);
+    setTimeout(() => (uploadSuccess = false), 3000);
   }
 
   function handleDrop(event: DragEvent) {
@@ -36,8 +36,8 @@
 <fluent-card
   class="p-8 text-center"
   class:dragover={dragOver}
-  on:dragenter={() => dragOver = true}
-  on:dragleave={() => dragOver = false}
+  on:dragenter={() => (dragOver = true)}
+  on:dragleave={() => (dragOver = false)}
   on:dragover|preventDefault
   on:drop|preventDefault={handleDrop}
   role="region"
