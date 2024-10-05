@@ -1,7 +1,6 @@
-import { marked } from "marked";
-import type { Tokens } from "marked";
+import { marked } from 'marked';
 import DOMPurify from 'dompurify';
-import { v4 as uuidv4 } from "uuid";
+import { v4 as uuidv4 } from 'uuid';
 
 interface ChecklistItem {
   id: string;
@@ -10,26 +9,46 @@ interface ChecklistItem {
 }
 
 export function parseMarkdown(content: string): ChecklistItem[] {
-  const tokens = marked.lexer(content, { gfm: true, breaks: true });
   const checklistItems: ChecklistItem[] = [];
 
-  let inList = false;
-  for (const token of tokens) {
-    if (token.type === "list_start") {
-      inList = true;
-    } else if (token.type === "list_end") {
-      inList = false;
-    } else if (inList && token.type === "list_item") {
-      const listItem = token as Tokens.ListItem;
-      const checked = listItem.task && listItem.checked;
-      const text = listItem.text.replace(/^\[[ x]\]\s*/, "").trim();
-      checklistItems.push({
-        id: uuidv4(),
-        text: DOMPurify.sanitize(text),
-        checked: !!checked,
-      });
+  const tokens = marked.lexer(content, { gfm: true, breaks: true });
+
+  function processTokens(tokens: marked.Token[]) {
+    for (const token of tokens) {
+      if (token.type === 'list') {
+        const listToken = token as marked.Tokens.List;
+        // Process each list item
+        processTokens(listToken.items);
+      } else if (token.type === 'list_item') {
+        const listItem = token as marked.Tokens.ListItem;
+        if (listItem.task) {
+          const text = DOMPurify.sanitize(listItem.text);
+          const checked = !!listItem.checked;
+          checklistItems.push({
+            id: uuidv4(),
+            text,
+            checked,
+          });
+        }
+
+        // Process nested tokens if any (e.g., sublists)
+        if (listItem.tokens && listItem.tokens.length > 0) {
+          processTokens(listItem.tokens);
+        }
+      } else if (hasTokens(token)) {
+        if (token.tokens && token.tokens.length > 0) {
+          processTokens(token.tokens);
+        }
+      }
     }
   }
+
+  // Type guard to check if a token has 'tokens' property
+  function hasTokens(token: marked.Token): token is marked.Token & { tokens: marked.Token[] } {
+    return 'tokens' in token && Array.isArray((token as any).tokens);
+  }
+
+  processTokens(tokens);
 
   return checklistItems;
 }
@@ -37,19 +56,19 @@ export function parseMarkdown(content: string): ChecklistItem[] {
 export function renderTodoText(text: string): string {
   const renderer = new marked.Renderer();
 
-  renderer.link = (href, title, linkText) => {
+  renderer.link = (href: string, title: string | null, text: string) => {
     const safeHref = DOMPurify.sanitize(href);
-    const safeTitle = title ? ` title="${DOMPurify.sanitize(title)}"` : "";
-    const safeLinkText = DOMPurify.sanitize(linkText);
-    return `<a href="${safeHref}"${safeTitle} target="_blank" rel="noopener noreferrer">${safeLinkText}</a>`;
+    const safeTitle = title ? ` title="${DOMPurify.sanitize(title)}"` : '';
+    return `<a href="${safeHref}"${safeTitle} target="_blank" rel="noopener noreferrer">${text}</a>`;
   };
 
-  renderer.image = (src, title, alt) => {
-    const safeSrc = DOMPurify.sanitize(src);
-    const safeAlt = DOMPurify.sanitize(alt);
-    const safeTitle = title ? ` title="${DOMPurify.sanitize(title)}"` : "";
+  renderer.image = (href: string, title: string | null, text: string) => {
+    const safeSrc = DOMPurify.sanitize(href);
+    const safeAlt = text ? DOMPurify.sanitize(text) : '';
+    const safeTitle = title ? ` title="${DOMPurify.sanitize(title)}"` : '';
     return `<img src="${safeSrc}" alt="${safeAlt}"${safeTitle} style="max-width: 100%; height: auto;">`;
   };
 
-  return DOMPurify.sanitize(marked.parse(text, { renderer }));
+  const parsedText = marked.parseInline(text, { renderer });
+  return DOMPurify.sanitize(parsedText);
 }

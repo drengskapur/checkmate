@@ -1,22 +1,19 @@
-import { defineConfig } from 'vite';
-import { svelte } from '@sveltejs/vite-plugin-svelte';
-import { crx } from 'vite-plugin-chrome-extension';
-
-import manifest from './manifest.json';
+// vite.config.js
+import { defineConfig } from "vite";
+import { svelte } from "@sveltejs/vite-plugin-svelte";
 
 export default defineConfig({
-  plugins: [svelte(), crx({ manifest })],
+  plugins: [svelte()],
   build: {
     rollupOptions: {
       input: {
-        main: 'src/main.ts',
-        background: 'src/background.ts',
+        popup: "src/main.ts",       // Entry point for the popup
+        background: "src/background.ts", // Entry point for the background script
       },
       output: {
-        entryFileNames: '[name].js',
-        chunkFileNames: '[name].js',
-        assetFileNames: '[name].[ext]',
+        entryFileNames: "[name].js", // Output files will be named based on the entry point names
       },
     },
   },
 });
+

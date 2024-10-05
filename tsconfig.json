@@ -1,16 +1,11 @@
 {
-  "extends": "@tsconfig/svelte/tsconfig.json",
   "compilerOptions": {
-    "types": [
-      "svelte",
-      "chrome"
-    ],
+    "types": ["svelte", "chrome"],
     "moduleResolution": "node",
     "isolatedModules": true,
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "allowJs": true,
-    "checkJs": true,
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true

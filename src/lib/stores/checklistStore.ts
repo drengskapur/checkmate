@@ -33,26 +33,26 @@ function createChecklistStore() {
   return {
     subscribe,
     addTemplate: (name: string, items: ChecklistItem[]) =>
-      update(state => ({
+      update((state) => ({
         ...state,
         templates: [...state.templates, { id: uuidv4(), name, items }],
       })),
 
     removeTemplate: (id: string) =>
-      update(state => ({
+      update((state) => ({
         ...state,
-        templates: state.templates.filter(t => t.id !== id),
+        templates: state.templates.filter((t) => t.id !== id),
       })),
 
     startChecklist: (templateId: string) =>
-      update(state => {
-        const template = state.templates.find(t => t.id === templateId);
+      update((state) => {
+        const template = state.templates.find((t) => t.id === templateId);
         if (!template) return state;
 
         const newChecklist: ActiveChecklist = {
           id: uuidv4(),
           name: template.name,
-          items: template.items.map(item => ({ ...item, id: uuidv4() })),
+          items: template.items.map((item) => ({ ...item, id: uuidv4() })),
         };
 
         return {
@@ -62,21 +62,21 @@ function createChecklistStore() {
       }),
 
     updateActiveChecklist: (id: string, items: ChecklistItem[]) =>
-      update(state => ({
+      update((state) => ({
         ...state,
-        activeChecklists: state.activeChecklists.map(cl =>
-          cl.id === id ? { ...cl, items } : cl
+        activeChecklists: state.activeChecklists.map((cl) =>
+          cl.id === id ? { ...cl, items } : cl,
         ),
       })),
 
     removeActiveChecklist: (id: string) =>
-      update(state => ({
+      update((state) => ({
         ...state,
-        activeChecklists: state.activeChecklists.filter(cl => cl.id !== id),
+        activeChecklists: state.activeChecklists.filter((cl) => cl.id !== id),
       })),
 
     loadChecklists: (checklists: ChecklistTemplate[]) =>
-      update(state => ({ ...state, templates: checklists })),
+      update((state) => ({ ...state, templates: checklists })),
   };
 }
 
