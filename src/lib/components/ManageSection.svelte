@@ -57,14 +57,14 @@
     <p>No active checklists.</p>
   {:else}
     {#each $checklistStore.activeChecklists as checklist}
-        <fluent-button
-          role="button"
-          tabindex="0"
-          on:click={() => checklistStore.removeActiveChecklist(checklist.id)}
-          on:keydown={(e: KeyboardEvent) => handleKeydown(e, () => checklistStore.removeActiveChecklist(checklist.id))}
-        >
-        Remove
-        </fluent-button>
+    <fluent-button
+    role="button"
+    tabindex="0"
+    on:click={() => checklistStore.removeActiveChecklist(checklist.id)}
+    on:keydown={(e) => handleKeydown(e, () => checklistStore.removeActiveChecklist(checklist.id))}
+  >
+    Remove
+  </fluent-button>
     {/each}
   {/if}
 </fluent-card>

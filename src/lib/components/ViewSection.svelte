@@ -1,7 +1,6 @@
 <script lang="ts">
   import { checklistStore } from '$lib/stores/checklistStore';
-  import type { ChecklistItem } from '$lib/stores/checklistStore';
-  import type { ActiveChecklist } from '$lib/stores/checklistStore';
+  import type { ChecklistItem, ActiveChecklist } from '$lib/stores/checklistStore';
   import { renderTodoText } from '$lib/utils/markdown';
   import {
     provideFluentDesignSystem,
@@ -42,7 +41,7 @@
   }
 
   function updateItem(checklist: ActiveChecklist, item: ChecklistItem) {
-    const updatedItems = checklist.items.map((i: { id: any; checked: any; }) =>
+    const updatedItems = checklist.items.map((i) =>
       i.id === item.id ? { ...i, checked: !i.checked } : i
     );
     checklistStore.updateActiveChecklist(checklist.id, updatedItems);
