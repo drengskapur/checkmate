@@ -11,6 +11,12 @@
   function startChecklist(templateId: string) {
     checklistStore.startChecklist(templateId);
   }
+
+  function handleKeydown(event: KeyboardEvent, action: () => void) {
+    if (event.key === 'Enter' || event.key === ' ') {
+      action();
+    }
+  }
 </script>
 
 <fluent-card class="p-4">
@@ -22,8 +28,19 @@
       <div class="flex justify-between items-center mb-2">
         <span>{template.name}</span>
         <div>
-          <fluent-button appearance="accent" on:click={() => startChecklist(template.id)}>Start</fluent-button>
-          <fluent-button on:click={() => deleteTemplate(template.id)}>Delete</fluent-button>
+          <fluent-button
+            appearance="accent"
+            on:click={() => startChecklist(template.id)}
+            on:keydown={(e: KeyboardEvent) => handleKeydown(e, () => startChecklist(template.id))}
+            role="button"
+            tabindex="0"
+          >Start</fluent-button>
+          <fluent-button
+            on:click={() => deleteTemplate(template.id)}
+            on:keydown={(e: KeyboardEvent) => handleKeydown(e, () => deleteTemplate(template.id))}
+            role="button"
+            tabindex="0"
+          >Delete</fluent-button>
         </div>
       </div>
     {/each}
@@ -38,7 +55,12 @@
     {#each $checklistStore.activeChecklists as checklist}
       <div class="flex justify-between items-center mb-2">
         <span>{checklist.name}</span>
-        <fluent-button on:click={() => checklistStore.removeActiveChecklist(checklist.id)}>Remove</fluent-button>
+        <fluent-button
+          on:click={() => checklistStore.removeActiveChecklist(checklist.id)}
+          on:keydown={(e: KeyboardEvent) => handleKeydown(e, () => checklistStore.removeActiveChecklist(checklist.id))}
+          role="button"
+          tabindex="0"
+        >Remove</fluent-button>
       </div>
     {/each}
   {/if}

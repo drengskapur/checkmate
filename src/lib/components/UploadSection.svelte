@@ -10,7 +10,7 @@
   let uploadSuccess = false;
 
   async function handleFileUpload(uploadedFiles: FileList) {
-    for (let file of uploadedFiles) {
+    for (let file of Array.from(uploadedFiles)) {
       if (file.type !== 'text/markdown' && !file.name.endsWith('.md')) {
         console.warn(`${file.name} is not a Markdown file.`);
         continue;
@@ -40,6 +40,8 @@
   on:dragleave={() => dragOver = false}
   on:dragover|preventDefault
   on:drop|preventDefault={handleDrop}
+  role="region"
+  aria-label="Upload area"
 >
   <h2 class="text-2xl mb-4">Upload Checklist Templates</h2>
   <p class="mb-4">Drag & drop Markdown files here or</p>
@@ -53,7 +55,7 @@
     class="hidden"
   />
   <label for="file-input">
-    <fluent-button appearance="accent">Choose Files</fluent-button>
+    <fluent-button role="button" appearance="accent">Choose Files</fluent-button>
   </label>
   {#if uploadSuccess}
     <p class="text-green-500 mt-4">Upload successful!</p>
@@ -62,6 +64,8 @@
 
 <style>
   .dragover {
-    @apply border-2 border-dashed border-primary;
+    border-width: 2px;
+    border-style: dashed;
+    border-color: var(--primary-color);
   }
 </style>

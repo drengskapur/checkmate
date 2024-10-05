@@ -41,3 +41,9 @@ body {
 .card {
   @apply bg-card p-6 rounded-lg shadow-md;
 }
+
+.dragover {
+  border-width: 2px;
+  border-style: dashed;
+  border-color: var(--primary-color);
+}

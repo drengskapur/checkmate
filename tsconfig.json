@@ -1,11 +1,23 @@
 {
   "extends": "@tsconfig/svelte/tsconfig.json",
-
   "compilerOptions": {
+    "target": "ESNext",
+    "useDefineForClassFields": true,
+    "module": "ESNext",
+    "resolveJsonModule": true,
+    "allowJs": true,
+    "checkJs": true,
+    "isolatedModules": true,
     "lib": ["DOM", "ES2017", "WebWorker"],
-    "types": ["svelte", "chrome"]
+    "types": ["svelte", "chrome"],
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "baseUrl": ".",
+    "paths": {
+      "$lib/*": ["src/lib/*"]
+    }
   },
-
-  "include": ["src/**/*"],
-  "exclude": ["node_modules/*", "__sapper__/*", "public/*"]
+  "include": ["src/**/*.d.ts", "src/**/*.ts", "src/**/*.svelte"],
+  "exclude": ["src/**/*.js"],
+  "references": [{ "path": "./tsconfig.node.json" }]
 }

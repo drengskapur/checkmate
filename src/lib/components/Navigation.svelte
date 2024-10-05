@@ -5,21 +5,31 @@
   provideFluentDesignSystem().register(fluentButton());
 
   const sections = [
-    { id: 'upload', label: 'Upload' },
-    { id: 'manage', label: 'Manage' },
-    { id: 'view', label: 'View' },
+    { id: 'upload' as const, label: 'Upload' },
+    { id: 'manage' as const, label: 'Manage' },
+    { id: 'view' as const, label: 'View' },
   ];
 
   function setSection(section: 'upload' | 'manage' | 'view') {
     currentSection.set(section);
+  }
+
+  function handleKeydown(event: KeyboardEvent, section: 'upload' | 'manage' | 'view') {
+    if (event.key === 'Enter' || event.key === ' ') {
+      setSection(section);
+    }
   }
 </script>
 
 <nav class="flex justify-around bg-card my-4">
   {#each sections as section}
     <fluent-button
-      appearance={ === section.id ? 'accent' : 'lightweight'}
+      appearance={$currentSection === section.id ? 'accent' : 'lightweight'}
       on:click={() => setSection(section.id)}
+      on:keydown={(e: KeyboardEvent) => handleKeydown(e, section.id)}
+      role="tab"
+      tabindex="0"
+      aria-selected={$currentSection === section.id}
     >
       {section.label}
     </fluent-button>

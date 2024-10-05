@@ -3,6 +3,8 @@
         "svelte.svelte-vscode",
         "ms-vscode.js-debug-nightly",
         "christian-kohler.npm-intellisense",
-        "jock.svg"
+        "jock.svg",
+        "ardenivanov.svelte-intellisense",
+        "leizongmin.node-module-intellisense"
     ]
 }

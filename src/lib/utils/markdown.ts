@@ -10,7 +10,7 @@ export function parseMarkdown(content: string) {
   const listItems = tempElement.querySelectorAll('li');
   return Array.from(listItems).map((item) => {
     const checkbox = item.querySelector('input[type="checkbox"]');
-    const checked = checkbox ? checkbox.checked : false;
+    const checked = checkbox ? checkbox.hasAttribute('checked') : false;
     return {
       id: uuidv4(),
       text: item.textContent?.trim() || '',

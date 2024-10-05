@@ -9,7 +9,7 @@
   let viewMode: 'list' | 'carousel' = 'list';
   let currentItemIndex = 0;
 
-  $: currentChecklist = $checklistStore.activeChecklists.find(cl => cl.id === selectedChecklist);
+  $: currentChecklist = $checklistStore.activeChecklists.find((cl: ActiveChecklist) => cl.id === selectedChecklist);
 
   function nextItem() {
     if (currentChecklist) {
@@ -24,8 +24,19 @@
   }
 
   function updateItem(checklist: ActiveChecklist, item: ChecklistItem) {
-    const updatedItems = checklist.items.map(i => i.id === item.id ? {...item, checked: !item.checked} : i);
+    const updatedItems = checklist.items.map((i: ChecklistItem) => i.id === item.id ? {...item, checked: !item.checked} : i);
     checklistStore.updateActiveChecklist(checklist.id, updatedItems);
+  }
+
+  function handleSelectChange(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    selectedChecklist = target.value;
+  }
+
+  function handleKeydown(event: KeyboardEvent, action: () => void) {
+    if (event.key === 'Enter' || event.key === ' ') {
+      action();
+    }
   }
 </script>
 
@@ -34,16 +45,27 @@
   {#if $checklistStore.activeChecklists.length === 0}
     <p>No active checklists available to view.</p>
   {:else}
-    <fluent-select class="w-full mb-4" on:change={(e) => selectedChecklist = e.target.value}>
-      <fluent-option value={null}>Select a checklist</fluent-option>
+    <fluent-select class="w-full mb-4" on:change={handleSelectChange}>
+      <fluent-option value="">Select a checklist</fluent-option>
       {#each $checklistStore.activeChecklists as checklist}
         <fluent-option value={checklist.id}>{checklist.name}</fluent-option>
       {/each}
     </fluent-select>
     {#if currentChecklist}
       <div class="flex justify-center mb-4">
-        <fluent-button appearance={viewMode === 'list' ? 'accent' : 'lightweight'} on:click={() => viewMode = 'list'}>List</fluent-button>
-        <fluent-button appearance={viewMode === 'carousel' ? 'accent' : 'lightweight'} on:click={() => viewMode = 'carousel'}>Carousel</fluent-button>
+        <fluent-button
+          appearance={viewMode === 'list' ? 'accent' : 'lightweight'}
+          on:click={() => viewMode = 'list'}
+          on:keydown={(e: KeyboardEvent) => handleKeydown(e, () => viewMode = 'list')}
+          tabindex="0"
+        >List</fluent-button>
+        <fluent-button
+          appearance={viewMode === 'carousel' ? 'accent' : 'lightweight'}
+          on:click={() => viewMode = 'carousel'}
+          on:keydown={(e: KeyboardEvent) => handleKeydown(e, () => viewMode = 'carousel')}
+          role="button"
+          tabindex="0"
+        >Carousel</fluent-button>
       </div>
       {#if viewMode === 'list'}
         {#each currentChecklist.items as item}
@@ -56,7 +78,12 @@
         {/each}
       {:else}
         <div class="flex justify-between items-center">
-          <fluent-button on:click={prevItem}>&lt;</fluent-button>
+          <fluent-button
+            on:click={prevItem}
+            on:keydown={(e: KeyboardEvent) => handleKeydown(e, prevItem)}
+            role="button"
+            tabindex="0"
+          >&lt;</fluent-button>
           {#if currentChecklist.items.length > 0}
             <fluent-checkbox
               checked={currentChecklist.items[currentItemIndex].checked}
@@ -65,7 +92,12 @@
           {:else}
             <p>No items to display.</p>
           {/if}
-          <fluent-button on:click={nextItem}>&gt;</fluent-button>
+          <fluent-button
+            on:click={nextItem}
+            on:keydown={(e: KeyboardEvent) => handleKeydown(e, nextItem)}
+            role="button"
+            tabindex="0"
+          >&gt;</fluent-button>
         </div>
       {/if}
     {/if}
