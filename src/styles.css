@@ -4,17 +4,17 @@
 
 /* Custom styles */
 :root {
-  --primary-color: #4CAF50;
-  --background-color: #F5F5F5;
+  --primary-color: #4caf50;
+  --background-color: #f5f5f5;
   --text-color: #333333;
-  --card-background: #FFFFFF;
-  --border-color: #DDDDDD;
+  --card-background: #ffffff;
+  --border-color: #dddddd;
 }
 
 .dark-mode {
-  --primary-color: #66BB6A;
+  --primary-color: #66bb6a;
   --background-color: #333333;
-  --text-color: #F5F5F5;
+  --text-color: #f5f5f5;
   --card-background: #424242;
   --border-color: #555555;
 }

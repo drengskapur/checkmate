@@ -1,15 +1,19 @@
-import { checklists, currentChecklistIndex, toggleCurrentTodo } from './checklistManager.js'
+import {
+  checklists,
+  currentChecklistIndex,
+  toggleCurrentTodo
+} from './checklistManager.js'
 
 export let currentItemIndex = 0
 
-export function showPreviousItem() {
+export function showPreviousItem () {
   if (currentItemIndex > 0) {
     currentItemIndex--
     showCurrentItem()
   }
 }
 
-export function showNextItem() {
+export function showNextItem () {
   const todos = checklists[currentChecklistIndex].todos
   if (currentItemIndex < todos.length - 1) {
     currentItemIndex++
@@ -17,7 +21,7 @@ export function showNextItem() {
   }
 }
 
-export function showCurrentItem() {
+export function showCurrentItem () {
   const currentItem = document.getElementById('current-item')
   const todos = checklists[currentChecklistIndex].todos
   if (todos.length > 0) {
@@ -38,9 +42,12 @@ export function showCurrentItem() {
   }
 }
 
-function renderTodoText(text) {
+function renderTodoText (text) {
   // Convert markdown links to HTML
-  text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>')
+  text = text.replace(
+    /\[([^\]]+)\]\(([^)]+)\)/g,
+    '<a href="$2" target="_blank">$1</a>'
+  )
 
   // Convert markdown images to HTML
   text = text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1">')

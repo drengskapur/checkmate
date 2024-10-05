@@ -1,15 +1,12 @@
 {
   "manifest_version": 3,
   "name": "CheckMate",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Streamline Your Checklists and Workflows",
   "action": {
     "default_popup": "popup.html"
   },
-  "permissions": [
-    "storage",
-    "activeTab"
-  ],
+  "permissions": ["storage", "activeTab"],
   "icons": {
     "16": "static/images/logo-icon.svg",
     "48": "static/images/logo-icon.svg",

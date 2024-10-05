@@ -1,5 +1,14 @@
-import { showUploadSection, showManageSection, showChecklistView, showCarouselView } from './viewManager.js'
-import { handleFileSelect, handleDragOver, handleDrop } from './fileHandlers.js'
+import {
+  showUploadSection,
+  showManageSection,
+  showChecklistView,
+  showCarouselView
+} from './viewManager.js'
+import {
+  handleFileSelect,
+  handleDragOver,
+  handleDrop
+} from './fileHandlers.js'
 import { showPreviousItem, showNextItem } from './carouselManager.js'
 import { toggleTheme, initTheme } from './themeManager.js'
 import { loadChecklists } from './checklistManager.js'

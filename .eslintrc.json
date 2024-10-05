@@ -1,9 +1,6 @@
 {
   "root": true,
-  "extends": [
-    "eslint:recommended",
-    "standard"
-  ],
+  "extends": ["eslint:recommended", "standard"],
   "env": {
     "browser": true,
     "es2021": true,
@@ -23,9 +20,6 @@
     "no-console": "off",
     "prefer-const": "error",
     "eqeqeq": "error",
-    "space-before-function-paren": [
-      "error",
-      "never"
-    ]
+    "space-before-function-paren": ["error", "never"]
   }
 }

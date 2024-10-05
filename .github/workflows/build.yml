@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 name: Build
 
 on:
@@ -36,42 +35,3 @@ jobs:
         with:
           name: extension-build
           path: checkmate.zip
-=======
-name: Build
-
-on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v4.2.0
-
-      - name: Setup Node.js
-        uses: actions/setup-node@0a44ba7841725637a19e28fa30b79a866c81b0a6 # v4.0.4
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Build extension
-        run: npm run build
-
-      - name: Zip dist folder
-        run: zip -r checkmate.zip dist
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
-        with:
-          name: extension-build
-          path: checkmate.zip
->>>>>>> 0cb2d83bf7f8fc4f9543c41570f0f1414788a7e9
