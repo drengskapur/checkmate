@@ -1,38 +1,40 @@
-import eslintPluginSvelte from "eslint-plugin-svelte";
+import path from "path";
+import { fileURLToPath } from "url";
+import { createRequire } from "module";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const require = createRequire(import.meta.url);
 
 export default [
-  ...eslintPluginSvelte.configs["flat/recommended"],
+  // Ignore build directories
   {
-    root: true,
-    env: {
-      browser: true,
-      es2021: true,
-      webextensions: true,
-    },
-    extends: [
-      "eslint:recommended",
-      "standard",
-      "plugin:@typescript-eslint/recommended",
-    ],
-    parser: "@typescript-eslint/parser",
-    parserOptions: {
-      ecmaVersion: "latest",
-      sourceType: "module",
-      project: "./tsconfig.json",
-    },
-    overrides: [
-      {
-        files: ["*.svelte"],
-        processor: "svelte3/svelte3-preprocess",
+    ignores: ["dist/**", ".svelte-kit/**"],
+  },
+  // Base configuration
+  {
+    files: ["*.ts", "*.svelte"],
+    languageOptions: {
+      parser: "@typescript-eslint/parser",
+      parserOptions: {
+        tsconfigRootDir: __dirname,
+        project: "./tsconfig.json",
+        ecmaVersion: "latest",
+        sourceType: "module",
       },
-    ],
-    plugins: ["@typescript-eslint"],
-    globals: {
-      chrome: "readonly",
-      window: "readonly",
+      env: {
+        browser: true,
+        es2021: true,
+      },
+    },
+    plugins: {
+      "@typescript-eslint": require("@typescript-eslint/eslint-plugin"),
+      svelte3: require("eslint-plugin-svelte3"),
+    },
+    settings: {
+      "svelte3/typescript": () => require("typescript"),
     },
     rules: {
-      "no-undef": "error",
+      // Your custom rules here
       "no-unused-vars": "warn",
       "no-console": "off",
       "prefer-const": "error",
@@ -40,5 +42,10 @@ export default [
       "space-before-function-paren": ["error", "never"],
       "@typescript-eslint/explicit-module-boundary-types": "off",
     },
+  },
+  // Svelte-specific overrides
+  {
+    files: ["*.svelte"],
+    processor: "svelte3/svelte3",
   },
 ];

@@ -1,15 +1,15 @@
-import { writable } from 'svelte/store';
+import { writable } from "svelte/store";
 
-type ThemeType = 'light' | 'dark';
+type ThemeType = "light" | "dark";
 
 function createThemeStore() {
-  const { subscribe, set, update } = writable<ThemeType>('light');
+  const { subscribe, set, update } = writable<ThemeType>("light");
 
   return {
     subscribe,
     toggleTheme: () =>
       update((currentTheme: ThemeType) =>
-        currentTheme === 'light' ? 'dark' : 'light',
+        currentTheme === "light" ? "dark" : "light",
       ),
     setTheme: (theme: ThemeType) => set(theme),
   };
