@@ -1,6 +1,7 @@
 <script lang="ts">
-  import { checklistStore } from "$lib/stores/checklistStore";
-  import { parseMarkdown } from "$lib/utils/markdown";
+  import { checklistStore } from "../stores/checklistStore";
+  import { parseMarkdown } from "../utils/markdown";
+  import { debounce } from "../utils/helpers";
   import { provideFluentDesignSystem, fluentButton, fluentCard } from "@fluentui/web-components";
 
   provideFluentDesignSystem().register(fluentButton(), fluentCard());
@@ -9,19 +10,28 @@
   let dragOver = false;
   let uploadSuccess = false;
 
+  const showUploadSuccess = debounce(() => {
+    uploadSuccess = true;
+    setTimeout(() => (uploadSuccess = false), 3000);
+  }, 300);
+
   async function handleFileUpload(uploadedFiles: FileList) {
     for (let file of Array.from(uploadedFiles)) {
       if (file.type !== "text/markdown" && !file.name.endsWith(".md")) {
         console.warn(`${file.name} is not a Markdown file.`);
         continue;
       }
-      const text = await file.text();
-      const items = parseMarkdown(text);
-      checklistStore.addTemplate(file.name, items);
+      try {
+        const text = await file.text();
+        const items = parseMarkdown(text);
+        checklistStore.addTemplate(file.name, items);
+        showUploadSuccess();
+      } catch (error) {
+        console.error(`Error processing file ${file.name}:`, error);
+        // TODO: Add user-friendly error message
+      }
     }
     files = null;
-    uploadSuccess = true;
-    setTimeout(() => (uploadSuccess = false), 3000);
   }
 
   function handleDrop(event: DragEvent) {
@@ -41,16 +51,25 @@
   on:dragover|preventDefault
   on:drop|preventDefault={handleDrop}
   role="region"
-  aria-label="Upload area"
+  aria-label="Upload area for checklist templates"
 >
   <h2 class="text-2xl mb-4">Upload Checklist Templates</h2>
   <p class="mb-4">Drag & drop Markdown files here or</p>
-  <input type="file" id="file-input" accept=".md,text/markdown" multiple bind:files on:change={() => files && handleFileUpload(files)} class="hidden" />
+  <input
+    type="file"
+    id="file-input"
+    accept=".md,text/markdown"
+    multiple
+    bind:files
+    on:change={() => files && handleFileUpload(files)}
+    class="hidden"
+    aria-label="File input for uploading checklist templates"
+  />
   <label for="file-input">
     <fluent-button role="button" appearance="accent">Choose Files</fluent-button>
   </label>
   {#if uploadSuccess}
-    <p class="text-green-500 mt-4">Upload successful!</p>
+    <p class="text-green-500 mt-4" role="status">Upload successful!</p>
   {/if}
 </fluent-card>
 

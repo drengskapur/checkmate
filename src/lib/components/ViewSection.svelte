@@ -1,15 +1,34 @@
 <script lang="ts">
-  import { checklistStore } from "$lib/stores/checklistStore";
-  import { renderTodoText } from "$lib/utils/markdown";
-  import { provideFluentDesignSystem, fluentButton, fluentCard, fluentCheckbox, fluentSelect, fluentOption } from "@fluentui/web-components";
+  import { checklistStore } from "../stores/checklistStore";
+  import { renderTodoText } from "../utils/markdown";
+  import {
+    provideFluentDesignSystem,
+    fluentButton,
+    fluentCard,
+    fluentCheckbox,
+    fluentSelect,
+    fluentOption,
+    fluentProgressRing
+  } from "@fluentui/web-components";
 
-  provideFluentDesignSystem().register(fluentButton(), fluentCard(), fluentCheckbox(), fluentSelect(), fluentOption());
+  provideFluentDesignSystem().register(
+    fluentButton(),
+    fluentCard(),
+    fluentCheckbox(),
+    fluentSelect(),
+    fluentOption(),
+    fluentProgressRing()
+  );
 
   let selectedChecklist: string | null = null;
   let viewMode: "list" | "carousel" = "list";
   let currentItemIndex = 0;
 
   $: currentChecklist = $checklistStore.activeChecklists.find((cl) => cl.id === selectedChecklist);
+
+  $: progress = currentChecklist
+    ? Math.round((currentChecklist.items.filter((item) => item.checked).length / currentChecklist.items.length) * 100)
+    : 0;
 
   function nextItem() {
     if (currentChecklist) {
@@ -24,7 +43,7 @@
   }
 
   function updateItem(checklist, item) {
-    const updatedItems = checklist.items.map((i: { id: any; checked: any }) => (i.id === item.id ? { ...i, checked: !i.checked } : i));
+    const updatedItems = checklist.items.map((i) => (i.id === item.id ? { ...i, checked: !i.checked } : i));
     checklistStore.updateActiveChecklist(checklist.id, updatedItems);
   }
 
@@ -34,7 +53,8 @@
   }
 
   function handleKeydown(event: KeyboardEvent, action: () => void) {
-    if (event.key === "Enter" || event.key === " ") {
+    if (event.code === "Enter" || event.code === "Space") {
+      event.preventDefault();
       action();
     }
   }
@@ -52,25 +72,31 @@
       {/each}
     </fluent-select>
     {#if currentChecklist}
-      <div class="flex justify-center mb-4">
-        <fluent-button
-          role="button"
-          tabindex="0"
-          appearance={viewMode === "list" ? "accent" : "lightweight"}
-          on:click={() => (viewMode = "list")}
-          on:keydown={(e) => handleKeydown(e, () => (viewMode = "list"))}
-        >
-          List
-        </fluent-button>
-        <fluent-button
-          role="button"
-          tabindex="0"
-          appearance={viewMode === "carousel" ? "accent" : "lightweight"}
-          on:click={() => (viewMode = "carousel")}
-          on:keydown={(e) => handleKeydown(e, () => (viewMode = "carousel"))}
-        >
-          Carousel
-        </fluent-button>
+      <div class="flex justify-between items-center mb-4">
+        <div class="flex justify-center">
+          <fluent-button
+            role="button"
+            tabindex="0"
+            appearance={viewMode === 'list' ? 'accent' : 'lightweight'}
+            on:click={() => (viewMode = 'list')}
+            on:keydown={(e) => handleKeydown(e, () => (viewMode = 'list'))}
+          >
+            List
+          </fluent-button>
+          <fluent-button
+            role="button"
+            tabindex="0"
+            appearance={viewMode === 'carousel' ? 'accent' : 'lightweight'}
+            on:click={() => (viewMode = 'carousel')}
+            on:keydown={(e) => handleKeydown(e, () => (viewMode = 'carousel'))}
+          >
+            Carousel
+          </fluent-button>
+        </div>
+        <fluent-progress-ring
+          value={progress}
+          aria-label={`Checklist progress: ${progress}%`}
+        ></fluent-progress-ring>
       </div>
       {#if viewMode === "list"}
         {#each currentChecklist.items as item}
@@ -82,7 +108,15 @@
         {/each}
       {:else}
         <div class="flex justify-between items-center">
-          <fluent-button role="button" tabindex="0" on:click={prevItem} on:keydown={(e) => handleKeydown(e, prevItem)}> &lt; </fluent-button>
+          <fluent-button
+            role="button"
+            tabindex="0"
+            on:click={prevItem}
+            on:keydown={(e) => handleKeydown(e, prevItem)}
+            aria-label="Previous item"
+          >
+            &lt;
+          </fluent-button>
           {#if currentChecklist.items.length > 0}
             <fluent-checkbox
               checked={currentChecklist.items[currentItemIndex].checked}
@@ -93,7 +127,15 @@
           {:else}
             <p>No items to display.</p>
           {/if}
-          <fluent-button role="button" tabindex="0" on:click={nextItem} on:keydown={(e) => handleKeydown(e, nextItem)}> &gt; </fluent-button>
+          <fluent-button
+            role="button"
+            tabindex="0"
+            on:click={nextItem}
+            on:keydown={(e) => handleKeydown(e, nextItem)}
+            aria-label="Next item"
+          >
+            &gt;
+          </fluent-button>
         </div>
       {/if}
     {/if}

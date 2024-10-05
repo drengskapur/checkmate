@@ -5,6 +5,7 @@
     "christian-kohler.npm-intellisense",
     "jock.svg",
     "ardenivanov.svelte-intellisense",
-    "leizongmin.node-module-intellisense"
+    "leizongmin.node-module-intellisense",
+    "dbaeumer.vscode-eslint"
   ]
 }
