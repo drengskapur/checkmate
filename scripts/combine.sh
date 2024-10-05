@@ -38,50 +38,42 @@
 
 # Use a heredoc to define exclusion patterns
 read -r -d '' EXCLUDE_PATTERNS <<'EOF'
-# Exclude files
+__pycache__/
+.devcontainer/
 .DS_Store
+.dvc/
+.git/
+.gitea/
+.github/
 .gitignore
+.parcel-cache/
+.svelte-kit/
+.temp/
+.venv/
+.vscode/
 *.log
 *.mp3
 *.mp4
 *.pdf
 *.pkl
 *.pyc
-Thumbs.db
-
-# Exclude specific files
 combine.sh
 combined.txt
 combined.yaml
-dvc.lock
-Makefile
-package-lock.json
-test.sh
-update_repository.sh
-update.sh
-
-# Exclude directories
-__pycache__/
-.devcontainer/
-.dvc/
-.git/
-.gitea/
-.parcel-cache/
-.svelte-kit/
-.temp/
-.venv/
-.vscode/
 data/
 debug/
 dist/
 docs/
-huggingface/
+Makefile
 node_modules/
 notebooks/
+package-lock.json
 scripts/
 terraform/
+test.sh
+Thumbs.db
+update.sh
 venv/
-.github/
 EOF
 
 #-------------------------------------------------------------------------------
