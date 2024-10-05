@@ -5,13 +5,7 @@
     "noImplicitAny": true,
     "target": "ES2016",
     "module": "ES2020",
-    "lib": [
-      "es5",
-      "es6",
-      "es7",
-      "dom",
-      "ES2021"
-    ],
+    "lib": ["es5", "es6", "es7", "dom", "ES2021"],
     "sourceMap": true,
     "allowSyntheticDefaultImports": true,
     "declaration": false,
@@ -19,17 +13,9 @@
     "baseUrl": ".",
     "resolveJsonModule": true,
     "esModuleInterop": true,
-    "types": [
-      "svelte",
-      "chrome"
-    ],
+    "types": ["svelte", "chrome"],
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true
   },
-  "include": [
-    "src/**/*.d.ts",
-    "src/**/*.ts",
-    "src/**/*.js",
-    "src/**/*.svelte"
-  ]
+  "include": ["src/**/*.d.ts", "src/**/*.ts", "src/**/*.js", "src/**/*.svelte"]
 }
