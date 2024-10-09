@@ -153,12 +153,12 @@ class FileCombiner:
                 chunk = f.read(8192)
             if b'\0' in chunk:
                 return True
-            # Try decoding as UTF-8
-            try:
-                chunk.decode('utf-8')
-                return False
-            except UnicodeDecodeError:
+            # Check the proportion of non-printable characters
+            text_characters = bytearray({7,8,9,10,12,13,27} | set(range(0x20, 0x100)))
+            nontext_count = sum(1 for byte in chunk if byte not in text_characters)
+            if nontext_count / len(chunk) > 0.30:
                 return True
+            return False
         except Exception as e:
             logging.debug(f"Error reading file {file_path}: {e}")
             return True

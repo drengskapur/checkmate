@@ -59,9 +59,9 @@ class TestFileCombiner(unittest.TestCase):
         self.assertNotIn("Source: another.txt", output)
 
     def test_multiple_files_same_extension(self):
-        self.create_file("file1.txt")
-        self.create_file("file2.txt")
-        self.create_file("file3.log")
+        self.create_file("file1.txt", "Content for file1")
+        self.create_file("file2.txt", "Content for file2")
+        self.create_file("file3.log", "This is a log file.")
         self.create_file(".combineignore", "*.txt")
         spec = self.load_spec()
         FileCombiner.combine_files(
@@ -343,10 +343,10 @@ class TestFileCombiner(unittest.TestCase):
         self.assertIn("root_file.txt", tree_content)
 
     def test_nested_exclude_patterns(self):
-        self.create_file("dir1/file1.txt")
-        self.create_file("dir1/subdir/file2.txt")
-        self.create_file("dir2/file3.txt")
-        self.create_file(".combineignore", "dir1/*\n!dir1/subdir/*")
+        self.create_file("dir1/file1.txt", "Content of file1")
+        self.create_file("dir1/subdir/file2.txt", "Content of file2")
+        self.create_file("dir2/file3.txt", "Content of file3")
+        self.create_file(".combineignore", "dir1/*\n!dir1/subdir/\n!dir1/subdir/*")
         spec = self.load_spec()
         FileCombiner.combine_files(
             self.test_dir, self.output_file, spec, tree_file=self.tree_file
