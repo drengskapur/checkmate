@@ -1,12 +1,12 @@
+
+__pycache__/
 !.env.example
 !.env.test
-.cache
 .cache
 .cache/
 .docusaurus
 .DS_Store
 .dynamodb/
-.env
 .env
 .env.*
 .env.development.local
