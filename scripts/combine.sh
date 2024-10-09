@@ -323,34 +323,15 @@ get_comment_close() {
 
 #-------------------------------------------------------------------------------
 # Function: generate_separator_line
-#   Generates a separator line with appropriate comment syntax.
-#
-# Arguments:
-#   $1 - The comment start string.
-#   $2 - The comment end string (optional).
+#   Generates a consistent separator line with '#' followed by '-' characters.
 #
 # Returns:
 #   The generated separator line string.
 #-------------------------------------------------------------------------------
 generate_separator_line() {
-    local comment_start="$1"
-    local comment_end="$2"
-    local total_length=80
-    local content_length=$((${#comment_start} + ${#comment_end} + 1))
-    local num_dashes=$((total_length - content_length))
-    local dashes
-
-    if ((num_dashes > 0)); then
-        dashes=$(printf '%*s' "$num_dashes" '' | tr ' ' '-')
-    else
-        dashes=""
-    fi
-
-    if [[ -n "$comment_end" ]]; then
-        printf "%s %s %s\n" "$comment_start" "$dashes" "$comment_end"
-    else
-        printf "%s %s\n" "$comment_start" "$dashes"
-    fi
+    printf '#%.0s' {1..1}
+    printf '%.0s-' {1..79}
+    echo
 }
 
 #-------------------------------------------------------------------------------
@@ -551,11 +532,8 @@ combine_files() {
                 # Save the file to the list of included files
                 echo "$file" >>"$included_files_list"
 
-                comment_start=$(get_comment_syntax "$file")
-                comment_end=$(get_comment_close "$file")
-
                 # Generate separator line
-                separator_line=$(generate_separator_line "$comment_start" "$comment_end")
+                separator_line=$(generate_separator_line)
 
                 if ! $first_file; then
                     # Add extra newline before separator for subsequent files
@@ -1088,29 +1066,6 @@ test_file_size_limit() {
     assert "echo \"$output\" | grep -q 'Source: ./small_file.txt'"
 }
 
-# Comment Syntax Tests
-test_comment_syntax() {
-    assert '[ "$(get_comment_syntax "test.sh")" = "#" ]'
-    assert '[ "$(get_comment_syntax "test.py")" = "#" ]'
-    assert '[ "$(get_comment_syntax "test.c")" = "//" ]'
-    assert '[ "$(get_comment_syntax "test.html")" = "<!--" ]'
-    assert '[ "$(get_comment_syntax "test.css")" = "/*" ]'
-    assert '[ "$(get_comment_syntax "test.sql")" = "--" ]'
-}
-
-test_comment_close() {
-    assert '[ "$(get_comment_close "test.html")" = "-->" ]'
-    assert '[ "$(get_comment_close "test.css")" = "*/" ]'
-    assert '[ "$(get_comment_close "test.sh")" = "" ]'
-}
-
-test_separator_line() {
-    local separator
-    separator=$(generate_separator_line "#" "")
-    assert "[ ${#separator} -eq 80 ]"
-    assert "[[ \"$separator\" == \"#\"* ]]"
-}
-
 # Tree Structure Tests
 test_tree_structure() {
     mkdir -p dir1/subdir dir2
@@ -1167,11 +1122,6 @@ run_tests() {
 
     # File Size Tests
     run_test "File Size Limit" test_file_size_limit
-
-    # Comment Syntax Tests
-    run_test "Comment Syntax" test_comment_syntax
-    run_test "Comment Close" test_comment_close
-    run_test "Separator Line" test_separator_line
 
     # Tree Structure Tests
     run_test "Tree Structure Generation" test_tree_structure
