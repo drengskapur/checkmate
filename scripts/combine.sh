@@ -399,11 +399,13 @@ is_binary() {
     # Check for null bytes (high weight)
     if LC_ALL=C grep -qP '\x00' "$file"; then
         score=$((score + 3))
+        [ "$score" -ge "$threshold" ] && return 0
     fi
 
     # Check if the file command doesn't mention "text" (medium weight)
     if ! file "$file" | grep -q "text"; then
         score=$((score + 2))
+        [ "$score" -ge "$threshold" ] && return 0
     fi
 
     # Count printable characters (low weight)
@@ -414,18 +416,13 @@ is_binary() {
     # Calculating percentage (low weight)
     if [ "$total_bytes" -gt 0 ]; then
         non_printable_percentage=$((non_printable_count * 100 / total_bytes))
+        if [ "$non_printable_percentage" -gt 30 ]; then
+            score=$((score + 1))
+            [ "$score" -ge "$threshold" ] && return 0
+        fi
     fi
 
-    if [ "$non_printable_percentage" -gt 30 ]; then
-        score=$((score + 1))
-    fi
-
-    # Check if the score exceeds the threshold
-    if [ "$score" -ge "$threshold" ]; then
-        return 0  # File is likely binary
-    else
-        return 1  # File is likely text
-    fi
+    return 1  # File is likely text
 }
 
 #-------------------------------------------------------------------------------
