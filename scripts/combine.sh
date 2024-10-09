@@ -7,7 +7,7 @@ shopt -s extglob globstar
 # Exclusion Patterns
 #-------------------------------------------------------------------------------
 
-# Use a heredoc to define exclusion patterns
+# Define exclusion patterns using a heredoc
 read -r -d '' EXCLUDE_PATTERNS <<'EOF'
 __pycache__/
 .bundle/
@@ -162,8 +162,7 @@ COMBINED_OUTPUT_PATH=""
 get_project_root() {
     local script_dir
     script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-    local current_dir
-    current_dir="$script_dir"
+    local current_dir="$script_dir"
     local max_depth=10
 
     # Try to find Git root
@@ -192,7 +191,7 @@ get_project_root() {
     done
 
     # If no project root found, use the script's parent directory
-    dirname "$script_dir"
+    echo "$(dirname "$script_dir")"
 }
 
 #-------------------------------------------------------------------------------
@@ -243,7 +242,7 @@ debug_log() {
 
 #-------------------------------------------------------------------------------
 # Function: generate_separator_line
-#   Generates a consistent separator line with '#' followed by '-' characters.
+#   Generates a consistent separator line.
 #
 # Returns:
 #   The generated separator line string.
@@ -279,12 +278,11 @@ setup_environment() {
 
 #-------------------------------------------------------------------------------
 # Function: load_patterns
-#   Loads exclusion and inclusion patterns into arrays.
+#   Loads exclusion patterns into an array.
 #-------------------------------------------------------------------------------
 load_patterns() {
     PATTERN_LIST=()
     local IFS=$'\n'
-    local pattern
     for pattern in $EXCLUDE_PATTERNS; do
         # Skip empty lines and comments
         [[ -z "$pattern" || "$pattern" == \#* ]] && continue
@@ -305,23 +303,24 @@ load_patterns() {
 #-------------------------------------------------------------------------------
 should_include_file() {
     local file="$1"
-    local matched="include" # By default, include the file
-    local pattern
+    local include=true
+
     for pattern in "${PATTERN_LIST[@]}"; do
         if [[ "$pattern" == '!'* ]]; then
             # Inclusion pattern
             pattern="${pattern#'!'}"
             if pattern_match "$file" "$pattern"; then
-                matched="include"
+                include=true
             fi
         else
             # Exclusion pattern
             if pattern_match "$file" "$pattern"; then
-                matched="exclude"
+                include=false
             fi
         fi
     done
-    if [[ "$matched" == "include" ]]; then
+
+    if "$include"; then
         return 0
     else
         return 1
@@ -348,43 +347,38 @@ pattern_match() {
 
     # If pattern ends with '/', match directories
     if [[ "$pattern" == */ ]]; then
-        # Remove trailing '/' from pattern
         pattern="${pattern%/}"
-        # Check if file starts with pattern
         if [[ "$file" == "$pattern"* ]]; then
             return 0
-        else
-            return 1
         fi
+        return 1
     fi
 
     # Handle patterns starting with '/' (root-level files)
     if [[ "$pattern" == /* ]]; then
-        pattern="${pattern#\/}"  # Remove leading '/'
+        pattern="${pattern#/}"
         if [[ "$file" == "$pattern" ]]; then
             return 0
-        else
-            return 1
         fi
+        return 1
     fi
 
     # Use extended globbing for other matching
     if [[ "$file" == $pattern ]]; then
         return 0
-    else
-        return 1
     fi
+    return 1
 }
 
 #-------------------------------------------------------------------------------
 # Function: is_binary
-#   Determines if a file is binary using an ensemble approach.
+#   Determines if a file is binary.
 #
 # Arguments:
 #   $1 - The file path.
 #
 # Returns:
-#   0 if the file is likely binary, 1 if it's likely text.
+#   0 if the file is binary, 1 if it's text.
 #-------------------------------------------------------------------------------
 is_binary() {
     local file="$1"
@@ -415,7 +409,7 @@ is_binary() {
 
     # Calculating percentage (low weight)
     if [ "$total_bytes" -gt 0 ]; then
-        non_printable_percentage=$((non_printable_count * 100 / total_bytes))
+        local non_printable_percentage=$((non_printable_count * 100 / total_bytes))
         if [ "$non_printable_percentage" -gt 30 ]; then
             score=$((score + 1))
             [ "$score" -ge "$threshold" ] && return 0
@@ -427,9 +421,7 @@ is_binary() {
 
 #-------------------------------------------------------------------------------
 # Function: combine_files
-#   Combines the contents of all text files within the project directory into a
-#   single output file, excluding specified files and directories.
-#   Records included files to generate a tree structure later.
+#   Combines the contents of all text files into a single output file.
 #-------------------------------------------------------------------------------
 combine_files() {
     local first_file=true
@@ -450,6 +442,7 @@ combine_files() {
                 echo "$file" >>"$included_files_list"
 
                 # Generate separator line
+                local separator_line
                 separator_line=$(generate_separator_line)
 
                 if ! $first_file; then
@@ -462,7 +455,7 @@ combine_files() {
                 fi
 
                 {
-                    printf '%s Source: %s %s\n\n' "$comment_start" "$file" "$comment_end"
+                    printf '# Source: %s \n\n' "$file"
                     cat "$file"
                 } >>"$OUTPUT_FILE"
                 debug_log "Added to combined file: $file"
@@ -489,7 +482,7 @@ combine_files() {
 
 #-------------------------------------------------------------------------------
 # Function: generate_tree_structure
-#   Generates a tree structure of the included files using pure Bash.
+#   Generates a tree structure of the included files.
 #-------------------------------------------------------------------------------
 generate_tree_structure() {
     echo "Generating tree structure using Bash..."
@@ -617,10 +610,12 @@ generate_tree_structure() {
     # Safely prepend the tree structure to the combined file
 
     # Create a temporary copy of OUTPUT_FILE to prevent reading and writing to the same file
+    local temp_output_data
     temp_output_data="$(mktemp "$DEBUG_DIR/temp_output_data.XXXXXX")"
     cp "$OUTPUT_FILE" "$temp_output_data"
 
     # Concatenate the tree and temporary output data into a new temporary file
+    local temp_output
     temp_output="$(mktemp "$DEBUG_DIR/temp_combined_output.XXXXXX")"
     cat "$TREE_FILE" "$temp_output_data" >"$temp_output"
 
