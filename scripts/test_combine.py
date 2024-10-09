@@ -1,12 +1,13 @@
 import os
 import shutil
+import subprocess
 import sys
 import tempfile
 import unittest
 from pathlib import Path
-import subprocess
 
 from combine import FileCombiner
+
 
 class TestFileCombiner(unittest.TestCase):
     def setUp(self):
@@ -202,8 +203,6 @@ class TestFileCombiner(unittest.TestCase):
         self.create_file(".combineignore", "!*.asdf")
         self.run_combine()
         output = self.output_file.read_text()
-        # Negation without a matching previous pattern doesn't affect inclusion
-        # Since there's no exclude pattern matching, all files should be included
         self.assertIn("Source: file1.asdf", output)
         self.assertIn("Source: file2.asdf", output)
         self.assertIn("Source: file3.txt", output)
@@ -262,13 +261,9 @@ class TestFileCombiner(unittest.TestCase):
         self.assertTrue(FileCombiner.is_binary(self.test_dir / "large.bin"))
 
     def test_file_size_limit(self):
-        # Update the combine.py script to accept --size-limit argument
-        # For this test, we'll need to adjust combine.py accordingly
         self.create_file("large_file.txt", "A" * (11 * 1024 * 1024))  # 11 MB file
         self.create_file("small_file.txt")
         self.create_file(".combineignore", "")
-        # Run combine.py with --size-limit argument
-        # Need to modify combine.py to accept --size-limit
         script_path = os.path.join(os.path.dirname(__file__), 'combine.py')
         cmd = [
             sys.executable,
@@ -343,6 +338,101 @@ class TestFileCombiner(unittest.TestCase):
         output = self.output_file.read_text(encoding="utf-8")
         self.assertIn("Source: non_ascii.txt", output)
         self.assertIn("こんにちは世界", output)
+
+    def test_exclude_directory_not_traversed(self):
+        # Create the .git directory with some files
+        self.create_file(".git/config", "[core]\nrepositoryformatversion = 0\n")
+        self.create_file(".git/HEAD", "ref: refs/heads/main\n")
+        self.create_file("other_directory/file.txt", "This should be included.")
+        self.create_file("root_file.txt", "This is a root file.")
+        self.create_file(".combineignore", ".git/")
+
+        self.run_combine()
+        output = self.output_file.read_text()
+        # Ensure files inside .git/ are not included
+        self.assertNotIn("Source: .git/config", output)
+        self.assertNotIn("Source: .git/HEAD", output)
+        # Ensure other files are included
+        self.assertIn("Source: other_directory/file.txt", output)
+        self.assertIn("Source: root_file.txt", output)
+
+    def test_exclude_multiple_directories(self):
+        # Create multiple directories to exclude
+        self.create_file("build/file1.txt", "Content in build")
+        self.create_file("dist/file2.txt", "Content in dist")
+        self.create_file("src/file3.txt", "Content in src")
+        self.create_file("root_file.txt", "This is a root file.")
+        self.create_file(".combineignore", "build/\ndist/")
+
+        self.run_combine()
+        output = self.output_file.read_text()
+        self.assertNotIn("Source: build/file1.txt", output)
+        self.assertNotIn("Source: dist/file2.txt", output)
+        self.assertIn("Source: src/file3.txt", output)
+        self.assertIn("Source: root_file.txt", output)
+
+    def test_exclude_nested_directories(self):
+        # Create nested directories
+        self.create_file("dir1/dir2/dir3/exclude_me/file.txt", "Should be excluded.")
+        self.create_file("dir1/dir2/dir3/include_me/file.txt", "Should be included.")
+        self.create_file(".combineignore", "dir1/dir2/dir3/exclude_me/")
+
+        self.run_combine()
+        output = self.output_file.read_text()
+        self.assertNotIn("Source: dir1/dir2/dir3/exclude_me/file.txt", output)
+        self.assertIn("Source: dir1/dir2/dir3/include_me/file.txt", output)
+
+    def test_negated_directory_pattern(self):
+        # Create directories and files
+        self.create_file("logs/error.log", "Error log")
+        self.create_file("logs/access.log", "Access log")
+        self.create_file("logs/keep.log", "This should be kept")
+        self.create_file(".combineignore", "logs/*.log\n!logs/keep.log")
+
+        self.run_combine()
+        output = self.output_file.read_text()
+        self.assertNotIn("Source: logs/error.log", output)
+        self.assertNotIn("Source: logs/access.log", output)
+        self.assertIn("Source: logs/keep.log", output)
+
+    def test_pattern_with_trailing_slash(self):
+        # Create directories and files
+        self.create_file("cache/temp_file.txt", "Cached data")
+        self.create_file("cache_dir/temp_file.txt", "This should be included")
+        self.create_file("root_file.txt", "Root file")
+        self.create_file(".combineignore", "cache/")
+
+        self.run_combine()
+        output = self.output_file.read_text()
+        self.assertNotIn("Source: cache/temp_file.txt", output)
+        self.assertIn("Source: cache_dir/temp_file.txt", output)
+        self.assertIn("Source: root_file.txt", output)
+
+    def test_double_star_pattern(self):
+        # Create files in multiple levels
+        self.create_file("dir/a.txt", "Content A")
+        self.create_file("dir/subdir/b.txt", "Content B")
+        self.create_file("dir/subdir/deep/c.txt", "Content C")
+        self.create_file(".combineignore", "**/subdir/**")
+
+        self.run_combine()
+        output = self.output_file.read_text()
+        self.assertIn("Source: dir/a.txt", output)
+        self.assertNotIn("Source: dir/subdir/b.txt", output)
+        self.assertNotIn("Source: dir/subdir/deep/c.txt", output)
+
+    def test_exclude_directory_with_wildcard(self):
+        # Create multiple versioned directories
+        self.create_file("build-v1.0/file.txt", "Version 1.0")
+        self.create_file("build-v2.0/file.txt", "Version 2.0")
+        self.create_file("src/file.txt", "Source code")
+        self.create_file(".combineignore", "build-*/")
+
+        self.run_combine()
+        output = self.output_file.read_text()
+        self.assertNotIn("Source: build-v1.0/file.txt", output)
+        self.assertNotIn("Source: build-v2.0/file.txt", output)
+        self.assertIn("Source: src/file.txt", output)
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
