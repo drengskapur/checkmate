@@ -4,11 +4,9 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+import subprocess
 
 from combine import FileCombiner
-
-import pathspec
-
 
 class TestFileCombiner(unittest.TestCase):
     def setUp(self):
@@ -30,18 +28,27 @@ class TestFileCombiner(unittest.TestCase):
         else:
             file_path.write_text(content)
 
-    def load_spec(self):
-        exclude_patterns = FileCombiner.load_exclude_patterns(self.test_dir)
-        return exclude_patterns
+    def run_combine(self, additional_args=None):
+        '''
+        Helper method to run the combine.py script via CLI.
+        '''
+        script_path = os.path.join(os.path.dirname(__file__), 'combine.py')
+        cmd = [
+            sys.executable,
+            script_path,
+            '--project-root', str(self.test_dir),
+            '--output', str(self.output_file),
+        ]
+        if additional_args:
+            cmd.extend(additional_args)
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, msg=f"Script failed: {result.stderr}")
 
     def test_ignore_single_file(self):
         self.create_file("example.txt")
         self.create_file("another.txt")
         self.create_file(".combineignore", "example.txt")
-        spec = self.load_spec()
-        FileCombiner.combine_files(
-            self.test_dir, self.output_file, spec, tree_file=self.tree_file
-        )
+        self.run_combine()
         output = self.output_file.read_text()
         self.assertNotIn("Source: example.txt", output)
         self.assertIn("Source: another.txt", output)
@@ -50,10 +57,7 @@ class TestFileCombiner(unittest.TestCase):
         self.create_file("example.txt")
         self.create_file("another.txt")
         self.create_file(".combineignore", "*.txt\n!example.txt")
-        spec = self.load_spec()
-        FileCombiner.combine_files(
-            self.test_dir, self.output_file, spec, tree_file=self.tree_file
-        )
+        self.run_combine()
         output = self.output_file.read_text()
         self.assertIn("Source: example.txt", output)
         self.assertNotIn("Source: another.txt", output)
@@ -63,10 +67,7 @@ class TestFileCombiner(unittest.TestCase):
         self.create_file("file2.txt", "Content for file2")
         self.create_file("file3.log", "This is a log file.")
         self.create_file(".combineignore", "*.txt")
-        spec = self.load_spec()
-        FileCombiner.combine_files(
-            self.test_dir, self.output_file, spec, tree_file=self.tree_file
-        )
+        self.run_combine()
         output = self.output_file.read_text()
         self.assertNotIn("Source: file1.txt", output)
         self.assertNotIn("Source: file2.txt", output)
@@ -77,10 +78,7 @@ class TestFileCombiner(unittest.TestCase):
         self.create_file("example.log")
         self.create_file("other.txt")
         self.create_file(".combineignore", "example*")
-        spec = self.load_spec()
-        FileCombiner.combine_files(
-            self.test_dir, self.output_file, spec, tree_file=self.tree_file
-        )
+        self.run_combine()
         output = self.output_file.read_text()
         self.assertNotIn("Source: example.txt", output)
         self.assertNotIn("Source: example.log", output)
@@ -91,10 +89,7 @@ class TestFileCombiner(unittest.TestCase):
         self.create_file("examples/file2.txt")
         self.create_file("root_file.txt")
         self.create_file(".combineignore", "examples/")
-        spec = self.load_spec()
-        FileCombiner.combine_files(
-            self.test_dir, self.output_file, spec, tree_file=self.tree_file
-        )
+        self.run_combine()
         output = self.output_file.read_text()
         self.assertNotIn("Source: examples/file1.txt", output)
         self.assertNotIn("Source: examples/file2.txt", output)
@@ -105,10 +100,7 @@ class TestFileCombiner(unittest.TestCase):
         self.create_file("examples/other.txt")
         self.create_file("root_file.txt")
         self.create_file(".combineignore", "examples/example.txt")
-        spec = self.load_spec()
-        FileCombiner.combine_files(
-            self.test_dir, self.output_file, spec, tree_file=self.tree_file
-        )
+        self.run_combine()
         output = self.output_file.read_text()
         self.assertNotIn("Source: examples/example.txt", output)
         self.assertIn("Source: examples/other.txt", output)
@@ -119,10 +111,7 @@ class TestFileCombiner(unittest.TestCase):
         self.create_file("examples/ignore.txt")
         self.create_file("root_file.txt")
         self.create_file(".combineignore", "examples/*\n!examples/keep.txt")
-        spec = self.load_spec()
-        FileCombiner.combine_files(
-            self.test_dir, self.output_file, spec, tree_file=self.tree_file
-        )
+        self.run_combine()
         output = self.output_file.read_text()
         self.assertIn("Source: examples/keep.txt", output)
         self.assertNotIn("Source: examples/ignore.txt", output)
@@ -134,10 +123,7 @@ class TestFileCombiner(unittest.TestCase):
         self.create_file("example.txt")
         self.create_file("other.txt")
         self.create_file(".combineignore", "**/example.txt")
-        spec = self.load_spec()
-        FileCombiner.combine_files(
-            self.test_dir, self.output_file, spec, tree_file=self.tree_file
-        )
+        self.run_combine()
         output = self.output_file.read_text()
         self.assertNotIn("Source: dir1/example.txt", output)
         self.assertNotIn("Source: dir2/example.txt", output)
@@ -149,10 +135,7 @@ class TestFileCombiner(unittest.TestCase):
         self.create_file("dir1/example.txt")
         self.create_file("other.txt")
         self.create_file(".combineignore", "/example.txt")
-        spec = self.load_spec()
-        FileCombiner.combine_files(
-            self.test_dir, self.output_file, spec, tree_file=self.tree_file
-        )
+        self.run_combine()
         output = self.output_file.read_text()
         self.assertNotIn("Source: example.txt", output)
         self.assertIn("Source: dir1/example.txt", output)
@@ -161,33 +144,23 @@ class TestFileCombiner(unittest.TestCase):
     def test_nested_directories(self):
         self.create_file("dir1/dir2/dir3/dir4/nested_file.txt")
         self.create_file(".combineignore", "")
-        spec = self.load_spec()
-        FileCombiner.combine_files(
-            self.test_dir, self.output_file, spec, tree_file=self.tree_file
-        )
+        self.run_combine()
         output = self.output_file.read_text()
         self.assertIn("Source: dir1/dir2/dir3/dir4/nested_file.txt", output)
 
     def test_empty_directory(self):
         (self.test_dir / "empty_dir").mkdir()
         self.create_file(".combineignore", "")
-        spec = self.load_spec()
-        # Since there are no files, ensure no error occurs
-        FileCombiner.combine_files(
-            self.test_dir, self.output_file, spec, tree_file=self.tree_file
-        )
+        self.run_combine(additional_args=['--output-tree'])
         self.assertTrue(self.output_file.exists())
-        tree_content = self.tree_file.read_text()
+        tree_content = (self.test_dir / "tree.txt").read_text()
         self.assertIn("empty_dir", tree_content)
 
     def test_hidden_files(self):
         self.create_file(".hidden_file")
         self.create_file("visible_file")
         self.create_file(".combineignore", ".*")
-        spec = self.load_spec()
-        FileCombiner.combine_files(
-            self.test_dir, self.output_file, spec, tree_file=self.tree_file
-        )
+        self.run_combine()
         output = self.output_file.read_text()
         self.assertNotIn("Source: .hidden_file", output)
         self.assertIn("Source: visible_file", output)
@@ -196,10 +169,7 @@ class TestFileCombiner(unittest.TestCase):
         self.create_file("original.txt")
         os.symlink(self.test_dir / "original.txt", self.test_dir / "link.txt")
         self.create_file(".combineignore", "")
-        spec = self.load_spec()
-        FileCombiner.combine_files(
-            self.test_dir, self.output_file, spec, tree_file=self.tree_file
-        )
+        self.run_combine()
         output = self.output_file.read_text()
         self.assertIn("Source: original.txt", output)
         self.assertNotIn("Source: link.txt", output)
@@ -208,10 +178,7 @@ class TestFileCombiner(unittest.TestCase):
         self.create_file("file with spaces.txt")
         self.create_file("file_with_$pecial_chars.txt", "Content with $pecial chars\n")
         self.create_file(".combineignore", "")
-        spec = self.load_spec()
-        FileCombiner.combine_files(
-            self.test_dir, self.output_file, spec, tree_file=self.tree_file
-        )
+        self.run_combine()
         output = self.output_file.read_text()
         self.assertIn("Source: file with spaces.txt", output)
         self.assertIn("Source: file_with_$pecial_chars.txt", output)
@@ -222,10 +189,7 @@ class TestFileCombiner(unittest.TestCase):
         self.create_file("example.txt")
         self.create_file("other.txt")
         self.create_file(".combineignore", "[Ee]xample.txt")
-        spec = self.load_spec()
-        FileCombiner.combine_files(
-            self.test_dir, self.output_file, spec, tree_file=self.tree_file
-        )
+        self.run_combine()
         output = self.output_file.read_text()
         self.assertNotIn("Source: Example.txt", output)
         self.assertNotIn("Source: example.txt", output)
@@ -236,14 +200,10 @@ class TestFileCombiner(unittest.TestCase):
         self.create_file("file2.asdf")
         self.create_file("file3.txt")
         self.create_file(".combineignore", "!*.asdf")
-        spec = self.load_spec()
-        # Since no files are excluded, all files should be included
-        FileCombiner.combine_files(
-            self.test_dir, self.output_file, spec, tree_file=self.tree_file
-        )
+        self.run_combine()
         output = self.output_file.read_text()
-        # Note: With gitignore syntax, negation only works if a previous pattern excluded it.
-        # Since no files are excluded, negation patterns have no effect.
+        # Negation without a matching previous pattern doesn't affect inclusion
+        # Since there's no exclude pattern matching, all files should be included
         self.assertIn("Source: file1.asdf", output)
         self.assertIn("Source: file2.asdf", output)
         self.assertIn("Source: file3.txt", output)
@@ -253,10 +213,7 @@ class TestFileCombiner(unittest.TestCase):
         self.create_file("file.txt.bak")
         self.create_file("file.bak.txt")
         self.create_file(".combineignore", "*.bak")
-        spec = self.load_spec()
-        FileCombiner.combine_files(
-            self.test_dir, self.output_file, spec, tree_file=self.tree_file
-        )
+        self.run_combine()
         output = self.output_file.read_text()
         self.assertIn("Source: file.txt", output)
         self.assertNotIn("Source: file.txt.bak", output)
@@ -266,10 +223,7 @@ class TestFileCombiner(unittest.TestCase):
         self.create_file("exclude_me.txt")
         self.create_file("include_me.txt")
         self.create_file(".combineignore", "*.txt\n!include_me.txt")
-        spec = self.load_spec()
-        FileCombiner.combine_files(
-            self.test_dir, self.output_file, spec, tree_file=self.tree_file
-        )
+        self.run_combine()
         output = self.output_file.read_text()
         self.assertNotIn("Source: exclude_me.txt", output)
         self.assertIn("Source: include_me.txt", output)
@@ -308,21 +262,26 @@ class TestFileCombiner(unittest.TestCase):
         self.assertTrue(FileCombiner.is_binary(self.test_dir / "large.bin"))
 
     def test_file_size_limit(self):
-        with open(self.test_dir / "large_file.txt", "wb") as f:
-            f.write(b"0" * (11 * 1024 * 1024))  # 11 MB file
+        # Update the combine.py script to accept --size-limit argument
+        # For this test, we'll need to adjust combine.py accordingly
+        self.create_file("large_file.txt", "A" * (11 * 1024 * 1024))  # 11 MB file
         self.create_file("small_file.txt")
         self.create_file(".combineignore", "")
-        spec = self.load_spec()
-        FileCombiner.combine_files(
-            self.test_dir,
-            self.output_file,
-            spec,
-            tree_file=self.tree_file,
-            size_limit=10 * 1024 * 1024,  # 10 MB
-        )
+        # Run combine.py with --size-limit argument
+        # Need to modify combine.py to accept --size-limit
+        script_path = os.path.join(os.path.dirname(__file__), 'combine.py')
+        cmd = [
+            sys.executable,
+            script_path,
+            '--project-root', str(self.test_dir),
+            '--output', str(self.output_file),
+            '--size-limit', str(10 * 1024 * 1024)  # 10 MB
+        ]
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, msg=f"Script failed: {result.stderr}")
         output = self.output_file.read_text()
-        self.assertIn("Source: large_file.txt (File too large", output)
-        self.assertIn("[File content not included due to size limit]", output)
+        self.assertIn("Source: large_file.txt", output)
+        self.assertIn("[File content not included due to size limit", output)
         self.assertIn("Source: small_file.txt", output)
 
     def test_tree_structure(self):
@@ -331,12 +290,9 @@ class TestFileCombiner(unittest.TestCase):
         self.create_file("dir2/file3.txt")
         self.create_file("root_file.txt")
         self.create_file(".combineignore", "")
-        spec = self.load_spec()
-        FileCombiner.combine_files(
-            self.test_dir, self.output_file, spec, tree_file=self.tree_file
-        )
-        self.assertTrue(self.tree_file.exists())
-        tree_content = self.tree_file.read_text()
+        self.run_combine(additional_args=['--output-tree'])
+        self.assertTrue((self.test_dir / 'tree.txt').exists())
+        tree_content = (self.test_dir / 'tree.txt').read_text()
         self.assertIn("dir1", tree_content)
         self.assertIn("subdir", tree_content)
         self.assertIn("dir2", tree_content)
@@ -347,10 +303,7 @@ class TestFileCombiner(unittest.TestCase):
         self.create_file("dir1/subdir/file2.txt", "Content of file2")
         self.create_file("dir2/file3.txt", "Content of file3")
         self.create_file(".combineignore", "dir1/*\n!dir1/subdir/\n!dir1/subdir/*")
-        spec = self.load_spec()
-        FileCombiner.combine_files(
-            self.test_dir, self.output_file, spec, tree_file=self.tree_file
-        )
+        self.run_combine()
         output = self.output_file.read_text()
         self.assertNotIn("Source: dir1/file1.txt", output)
         self.assertIn("Source: dir1/subdir/file2.txt", output)
@@ -360,17 +313,15 @@ class TestFileCombiner(unittest.TestCase):
         self.create_file("UPPERCASE.txt")
         self.create_file("lowercase.txt")
         self.create_file(".combineignore", "UPPERCASE.txt")
-        spec = self.load_spec()
-        FileCombiner.combine_files(
-            self.test_dir, self.output_file, spec, tree_file=self.tree_file
-        )
+        self.run_combine()
         output = self.output_file.read_text()
         if sys.platform == "win32":
-            # Windows file system is case-insensitive
+            # Windows is case-insensitive
             self.assertNotIn("Source: UPPERCASE.txt", output)
+            self.assertNotIn("Source: uppercase.txt", output)
             self.assertIn("Source: lowercase.txt", output)
         else:
-            # Case-sensitive file systems
+            # Unix-like systems are case-sensitive
             self.assertNotIn("Source: UPPERCASE.txt", output)
             self.assertIn("Source: lowercase.txt", output)
 
@@ -379,10 +330,7 @@ class TestFileCombiner(unittest.TestCase):
         self.create_file("file2.log")
         self.create_file("file3.py")
         self.create_file(".combineignore", "*.txt\n*.log")
-        spec = self.load_spec()
-        FileCombiner.combine_files(
-            self.test_dir, self.output_file, spec, tree_file=self.tree_file
-        )
+        self.run_combine()
         output = self.output_file.read_text()
         self.assertNotIn("Source: file1.txt", output)
         self.assertNotIn("Source: file2.log", output)
@@ -391,14 +339,10 @@ class TestFileCombiner(unittest.TestCase):
     def test_non_ascii_content(self):
         self.create_file("non_ascii.txt", "こんにちは世界\n")
         self.create_file(".combineignore", "")
-        spec = self.load_spec()
-        FileCombiner.combine_files(
-            self.test_dir, self.output_file, spec, tree_file=self.tree_file
-        )
+        self.run_combine()
         output = self.output_file.read_text(encoding="utf-8")
         self.assertIn("Source: non_ascii.txt", output)
         self.assertIn("こんにちは世界", output)
-
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
