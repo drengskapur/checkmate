@@ -201,9 +201,8 @@ get_project_root() {
 
 # Determine project root
 PROJECT_ROOT="$(get_project_root)"
-# Note: Removed 'readonly PROJECT_ROOT' to allow reassignment in tests
 
-# Initialize paths (they will be updated in setup_environment)
+# Initialize paths (updated in setup_environment)
 DEBUG_DIR=""
 OUTPUT_FILE=""
 TREE_FILE=""
@@ -658,9 +657,12 @@ generate_tree_structure() {
     done <"$DEBUG_DIR/tree_paths.txt"
 
     # Add empty directories
-    find . -type d -empty | sed 's#^\./##' | while read -r empty_dir; do
+    while read -r empty_dir; do
         parent=$(dirname "$empty_dir")
         dir=$(basename "$empty_dir")
+        if [[ "$parent" == "." && "$dir" == "." ]]; then
+            continue  # Skip the current directory '.'
+        fi
         if [[ -z "${children["$parent"]}" ]]; then
             children["$parent"]="$dir"
         else
@@ -668,7 +670,7 @@ generate_tree_structure() {
                 children["$parent"]+=$'\n'"$dir"
             fi
         fi
-    done
+    done < <(find . -type d -empty | sed 's#^\./##')
 
     # Function to recursively print the tree
     print_tree() {
@@ -986,12 +988,11 @@ test_symlink_handling() {
 
 test_special_characters() {
     create_file "file with spaces.txt"
-    echo "Content with \$pecial chars" > "file_with_\$pecial_chars.txt"
+    printf "Content with \$pecial chars\n" > "file_with_\$pecial_chars.txt"
     combine_files > /dev/null
-    local output=$(cat "$OUTPUT_FILE")
-    assert "echo \"$output\" | grep -q 'Source: ./file with spaces.txt'"
-    assert "echo \"$output\" | grep -q 'Source: ./file_with_\$pecial_chars.txt'"
-    assert "echo \"$output\" | grep -q 'Content with \$pecial chars'"
+    assert "grep -Fq 'Source: ./file with spaces.txt' \"$OUTPUT_FILE\""
+    assert "grep -Fq 'Source: ./file_with_\$pecial_chars.txt' \"$OUTPUT_FILE\""
+    assert "grep -Fq 'Content with \$pecial chars' \"$OUTPUT_FILE\""
 }
 
 # Pattern Matching Tests
