@@ -14,7 +14,7 @@
     "check": "svelte-check --tsconfig ./tsconfig.json"
   },
   "dependencies": {
-    "@fluentui/web-components": "^2.6.1",
+    "@fluentui/web-components": "^3.0.0",
     "dompurify": "^3.1.7",
     "marked": "^15.0.4",
     "uuid": "^10.2.0"
